@@ -1,0 +1,53 @@
+# Unity standart
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+[Uu]ser[Ss]ettings/
+
+# Asset meta
+sysinfo.txt
+
+# Builds
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# Crashlytics
+crashlytics-build.properties
+
+# ============= ÖNEMLİ: ASSET'LER =============
+# CraftPix asset'lerini repo'ya KOYMA (lisans nedeniyle)
+Assets/_Project/Art/Sprites/
+!Assets/_Project/Art/Sprites/.gitkeep
+Assets/_Project/Art/Particles/
+!Assets/_Project/Art/Particles/.gitkeep
+Assets/_Project/Audio/
+!Assets/_Project/Audio/.gitkeep
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# OS
+.DS_Store
+Thumbs.db
