@@ -3,6 +3,7 @@ using SweetMatch.Events;
 using SweetMatch.Model;
 using SweetMatch.Systems;
 using SweetMatch.Presentation.Game;
+using SweetMatch.Presentation.UI;
 using UnityEngine;
 
 namespace SweetMatch.Bootstrap
@@ -16,6 +17,11 @@ namespace SweetMatch.Bootstrap
         [Header("Views")]
         [SerializeField] private GridView gridView;
         [SerializeField] private GridFrameView frameView;
+        [SerializeField] private MovesView movesView;
+        [SerializeField] private GoalPanelView goalPanelView;
+
+        [Header("Data")]
+        [SerializeField] private ItemVisualConfigSO visualConfig;
 
         // Sistemler — sahne içinde tek instance
         private EventBus _eventBus;
@@ -72,6 +78,21 @@ namespace SweetMatch.Bootstrap
                 Debug.LogError("[Bootstrap] GridFrameView is missing!");
                 return false;
             }
+            if (movesView == null)
+            {
+                Debug.LogError("[Bootstrap] MovesView is missing!");
+                return false;
+            }
+            if (goalPanelView == null)
+            {
+                Debug.LogError("[Bootstrap] GoalPanelView is missing!");
+                return false;
+            }
+            if (visualConfig == null)
+            {
+                Debug.LogError("[Bootstrap] ItemVisualConfig is missing!");
+                return false;
+            }
             return true;
         }
 
@@ -115,6 +136,8 @@ namespace SweetMatch.Bootstrap
         {
             gridView.Build(_gridModel, _inputHandler);
             frameView.Fit(gridConfig.Width, gridConfig.Height, gridView.CellSize, gridView.CellSpacing);
+            movesView.Initialize(_eventBus, levelConfig.Moves);
+            goalPanelView.Initialize(_eventBus, levelConfig, visualConfig);
 
             _eventBus.Subscribe<ItemsClearedEvent>(_ => gridView.RenderAll());
             _eventBus.Subscribe<ItemsFellEvent>(_ => gridView.RenderAll());

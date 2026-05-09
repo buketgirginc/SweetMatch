@@ -119,9 +119,9 @@ Material:
     - _OutlineWidth: 0
     - _PerspectiveFilter: 0.875
     - _Reflectivity: 10
-    - _ScaleRatioA: 1
-    - _ScaleRatioB: 1
-    - _ScaleRatioC: 1
+    - _ScaleRatioA: 0.875
+    - _ScaleRatioB: 0.7109375
+    - _ScaleRatioC: 0.7109375
     - _ScaleX: 1
     - _ScaleY: 1
     - _ShaderFlags: 0
@@ -204,7 +204,7 @@ MonoBehaviour:
     atlasWidth: 1024
     atlasHeight: 1024
     characterSetSelectionMode: 7
-    characterSequence: "abc\xE7defg\u011Fh\u0131ijklmno\xF6prs\u015Ftu\xFCvyzwxqABC\xC7DEFG\u011EHI\u0130JKLMNO\xD6PRS\u015ETU\xDCVYZWXQ0123456789!?.,:;-+*=()[]/_'\""
+    characterSequence: " abc\xE7defg\u011Fh\u0131ijklmno\xF6prs\u015Ftu\xFCvyzwxqABC\xC7DEFG\u011EHI\u0130JKLMNO\xD6PRS\u015ETU\xDCVYZWXQ0123456789!?.,:;-+*=()[]/_'\""
     referencedFontAssetGUID: 
     referencedTextAssetGUID: 
     fontStyle: 0
@@ -1251,6 +1251,21 @@ MonoBehaviour:
     m_Scale: 1
     m_AtlasIndex: 0
     m_ClassDefinitionType: 0
+  - m_Index: 208
+    m_Metrics:
+      m_Width: 0
+      m_Height: 0
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 0
+      m_HorizontalAdvance: 38.3125
+    m_GlyphRect:
+      m_X: 0
+      m_Y: 0
+      m_Width: 0
+      m_Height: 0
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
   - m_Index: 213
     m_Metrics:
       m_Width: 25.90625
@@ -1522,6 +1537,10 @@ MonoBehaviour:
     m_AtlasIndex: 0
     m_ClassDefinitionType: 0
   m_CharacterTable:
+  - m_ElementType: 1
+    m_Unicode: 32
+    m_GlyphIndex: 208
+    m_Scale: 1
   - m_ElementType: 1
     m_Unicode: 33
     m_GlyphIndex: 218
