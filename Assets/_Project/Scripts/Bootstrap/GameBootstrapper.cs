@@ -19,6 +19,7 @@ namespace SweetMatch.Bootstrap
         [SerializeField] private GridFrameView frameView;
         [SerializeField] private MovesView movesView;
         [SerializeField] private GoalPanelView goalPanelView;
+        [SerializeField] private EndPanelView endPanelView;
 
         [Header("Data")]
         [SerializeField] private ItemVisualConfigSO visualConfig;
@@ -93,6 +94,11 @@ namespace SweetMatch.Bootstrap
                 Debug.LogError("[Bootstrap] ItemVisualConfig is missing!");
                 return false;
             }
+            if (endPanelView == null)
+            {
+                Debug.LogError("[Bootstrap] EndPanelView is missing!");
+                return false;
+            }
             return true;
         }
 
@@ -138,6 +144,7 @@ namespace SweetMatch.Bootstrap
             frameView.Fit(gridConfig.Width, gridConfig.Height, gridView.CellSize, gridView.CellSpacing);
             movesView.Initialize(_eventBus, levelConfig.Moves);
             goalPanelView.Initialize(_eventBus, levelConfig, visualConfig);
+            endPanelView.Initialize(_eventBus);
 
             _eventBus.Subscribe<ItemsClearedEvent>(_ => gridView.RenderAll());
             _eventBus.Subscribe<ItemsFellEvent>(_ => gridView.RenderAll());

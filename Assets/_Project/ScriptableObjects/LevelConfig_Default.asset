@@ -12,9 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0b8f396fb061ea4d8604344da481a9f, type: 3}
   m_Name: LevelConfig_Default
   m_EditorClassIdentifier: Assembly-CSharp::SweetMatch.Data.LevelConfigSO
-  Moves: 30
+  Moves: 10
   Goals:
   - Signature: sweet:bonbon
-    Count: 10
+    Count: 4
+  - Signature: sweet:star
+    Count: 2
   UseInitialLayout: 0
   InitialCells: []
