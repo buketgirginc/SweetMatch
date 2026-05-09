@@ -21,9 +21,14 @@ sysinfo.txt
 crashlytics-build.properties
 
 # ============= ÖNEMLİ: ASSET'LER =============
-# CraftPix asset'lerini repo'ya KOYMA (lisans nedeniyle)
-Assets/_Project/Art/Sprites/
-!Assets/_Project/Art/Sprites/.gitkeep
+# CraftPix klasörleri varsayılan olarak ignore (klasör içeriğini, klasörün kendisini değil)
+Assets/_Project/Art/Sprites/Items/
+Assets/_Project/Art/Sprites/Background/
+
+# Sprites/UI/ klasörü Kenney CC0 asset'leri için, takip edilir
+# (Sprites/.gitkeep da artık gereksiz — alt klasör yapısı çıkardı klasörü zaten)
+
+# Particles ve Audio (CraftPix yok ama olabilir, varsayılan ignore)
 Assets/_Project/Art/Particles/
 !Assets/_Project/Art/Particles/.gitkeep
 Assets/_Project/Audio/
