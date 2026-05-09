@@ -2,6 +2,7 @@ using SweetMatch.Data;
 using SweetMatch.Events;
 using SweetMatch.Model;
 using SweetMatch.Systems;
+using SweetMatch.Presentation.Game;
 using UnityEngine;
 
 namespace SweetMatch.Bootstrap
@@ -11,6 +12,9 @@ namespace SweetMatch.Bootstrap
         [Header("Configuration")]
         [SerializeField] private LevelConfigSO levelConfig;
         [SerializeField] private GridConfigSO gridConfig;
+
+        [Header("Views")]
+        [SerializeField] private GridView gridView;
 
         // Sistemler — sahne içinde tek instance
         private EventBus _eventBus;
@@ -37,6 +41,7 @@ namespace SweetMatch.Bootstrap
             BuildModel();
             BuildSystems();
             SubscribeDebugLogs();
+            BuildViews();
             BuildInitialBoard();
             StartGame();
 
@@ -54,6 +59,11 @@ namespace SweetMatch.Bootstrap
             if (gridConfig == null)
             {
                 Debug.LogError("[Bootstrap] GridConfig is missing!");
+                return false;
+            }
+            if (gridView == null)
+            {
+                Debug.LogError("[Bootstrap] GridView is missing!");
                 return false;
             }
             return true;
@@ -95,6 +105,15 @@ namespace SweetMatch.Bootstrap
                 _movesTracker, _stateMachine);
         }
 
+        private void BuildViews()
+        {
+            gridView.Build(_gridModel, _inputHandler);
+
+            _eventBus.Subscribe<ItemsClearedEvent>(_ => gridView.RenderAll());
+            _eventBus.Subscribe<ItemsFellEvent>(_ => gridView.RenderAll());
+            _eventBus.Subscribe<ItemsSpawnedEvent>(_ => gridView.RenderAll());
+        }
+
         // Faz 4 boyunca akışı console'da izlemek için event'lere debug abonelikleri
         private void SubscribeDebugLogs()
         {
@@ -130,6 +149,7 @@ namespace SweetMatch.Bootstrap
         {
             var builder = new InitialBoardBuilder(_gridModel, levelConfig, _itemFactory);
             builder.Build();
+            gridView.RenderAll();
         }
 
         private void StartGame()

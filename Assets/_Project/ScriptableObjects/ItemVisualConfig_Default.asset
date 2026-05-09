@@ -12,4 +12,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b82a8a8f360f90540ae654a0d1c981b7, type: 3}
   m_Name: ItemVisualConfig_Default
   m_EditorClassIdentifier: Assembly-CSharp::SweetMatch.Data.ItemVisualConfigSO
-  entries: []
+  entries:
+  - key: sweet_bonbon
+    sprite: {fileID: 21300000, guid: b6b2ccc4a750b654698cc5a83efe6d65, type: 3}
+    scale: 1
+    rotation: 0
+  - key: sweet_cookie
+    sprite: {fileID: 21300000, guid: cbf4e873a7e3074488563d843b85d201, type: 3}
+    scale: 1
+    rotation: 0
+  - key: sweet_lollipop
+    sprite: {fileID: 21300000, guid: 7abaef294bf04e448a09ce9532a18b47, type: 3}
+    scale: 1
+    rotation: 0
+  - key: sweet_donut
+    sprite: {fileID: 21300000, guid: 55347527869a7884bb3b640f8e7ec331, type: 3}
+    scale: 1
+    rotation: 0
+  - key: sweet_star
+    sprite: {fileID: 21300000, guid: 69edf2cbc4877de45ae8ca3215f2c94d, type: 3}
+    scale: 1
+    rotation: 0
+  - key: candybar_v
+    sprite: {fileID: 21300000, guid: 460f0cc0e36b58b46954b4eecfbe3bf4, type: 3}
+    scale: 1
+    rotation: 0
+  - key: candybar_h
+    sprite: {fileID: 21300000, guid: 460f0cc0e36b58b46954b4eecfbe3bf4, type: 3}
+    scale: 1
+    rotation: 90
+  - key: cupcake
+    sprite: {fileID: 21300000, guid: b0fcddc1eecf8f44fab1e3ac3aeb29eb, type: 3}
+    scale: 1
+    rotation: 0
+  - key: croissant
+    sprite: {fileID: 21300000, guid: 330346b04d9a53640b290b89da9f3cd4, type: 3}
+    scale: 1
+    rotation: 0
