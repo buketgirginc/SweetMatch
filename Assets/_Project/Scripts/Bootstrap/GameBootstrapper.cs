@@ -15,6 +15,7 @@ namespace SweetMatch.Bootstrap
 
         [Header("Views")]
         [SerializeField] private GridView gridView;
+        [SerializeField] private GridFrameView frameView;
 
         // Sistemler — sahne içinde tek instance
         private EventBus _eventBus;
@@ -66,6 +67,11 @@ namespace SweetMatch.Bootstrap
                 Debug.LogError("[Bootstrap] GridView is missing!");
                 return false;
             }
+            if (frameView == null)
+            {
+                Debug.LogError("[Bootstrap] GridFrameView is missing!");
+                return false;
+            }
             return true;
         }
 
@@ -108,6 +114,7 @@ namespace SweetMatch.Bootstrap
         private void BuildViews()
         {
             gridView.Build(_gridModel, _inputHandler);
+            frameView.Fit(gridConfig.Width, gridConfig.Height, gridView.CellSize, gridView.CellSpacing);
 
             _eventBus.Subscribe<ItemsClearedEvent>(_ => gridView.RenderAll());
             _eventBus.Subscribe<ItemsFellEvent>(_ => gridView.RenderAll());
