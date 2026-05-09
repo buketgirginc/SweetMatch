@@ -48,12 +48,9 @@ namespace SweetMatch.Bootstrap
             BuildEventBus();
             BuildModel();
             BuildSystems();
-            SubscribeDebugLogs();
             BuildViews();
             BuildInitialBoard();
             StartGame();
-
-            LogGridSnapshot("Initial board");
         }
 
         // Inspector referanslarının dolu olduğunu kontrol et
@@ -151,37 +148,6 @@ namespace SweetMatch.Bootstrap
             _eventBus.Subscribe<ItemsSpawnedEvent>(_ => gridView.RenderAll());
         }
 
-        // Faz 4 boyunca akışı console'da izlemek için event'lere debug abonelikleri
-        private void SubscribeDebugLogs()
-        {
-            _eventBus.Subscribe<CellClickedEvent>(e =>
-                Debug.Log($"[Click] {e.Position}"));
-
-            _eventBus.Subscribe<ItemsClearedEvent>(e =>
-                Debug.Log($"[Clear] {e.ClearedItems.Count} items destroyed"));
-
-            _eventBus.Subscribe<ItemsFellEvent>(e =>
-                Debug.Log($"[Fall] {e.Moves.Count} items fell"));
-
-            _eventBus.Subscribe<ItemsSpawnedEvent>(e =>
-                Debug.Log($"[Spawn] {e.Spawns.Count} new items"));
-
-            _eventBus.Subscribe<MovesChangedEvent>(e =>
-                Debug.Log($"[Moves] Remaining: {e.Remaining}"));
-
-            _eventBus.Subscribe<GoalProgressEvent>(e =>
-                Debug.Log($"[Goal] {e.Signature} → {e.Remaining} left"));
-
-            _eventBus.Subscribe<AllGoalsCompletedEvent>(_ =>
-                Debug.Log("[Goal] ALL COMPLETE!"));
-
-            _eventBus.Subscribe<NoMovesLeftEvent>(_ =>
-                Debug.Log("[Moves] OUT OF MOVES"));
-
-            _eventBus.Subscribe<GameStateChangedEvent>(e =>
-                Debug.Log($"[State] {e.Previous} → {e.Current}"));
-        }
-
         private void BuildInitialBoard()
         {
             var builder = new InitialBoardBuilder(_gridModel, levelConfig, _itemFactory);
@@ -194,45 +160,5 @@ namespace SweetMatch.Bootstrap
             _stateMachine.SetState(GameState.Idle);
         }
 
-        // === Manuel test için public API ===
-        // Faz 5'te CellView InputHandler'ı çağırınca bu method gereksiz olacak
-
-        // Inspector veya başka script'ten tıklama simüle et
-        public void SimulateClick(int x, int y)
-        {
-            _inputHandler.HandleCellClick(new GridPosition(x, y));
-        }
-
-        // Grid'in mevcut durumunu console'a yazdır
-        public void LogGridSnapshot(string label)
-        {
-            var sb = new System.Text.StringBuilder();
-            sb.AppendLine($"=== {label} ===");
-
-            for (int y = _gridModel.Height - 1; y >= 0; y--)
-            {
-                for (int x = 0; x < _gridModel.Width; x++)
-                {
-                    var cell = _gridModel.GetCell(x, y);
-                    sb.Append(cell.IsEmpty ? "[ . ]" : $"[{ItemSymbol(cell.Item)}]");
-                }
-                sb.AppendLine();
-            }
-
-            Debug.Log(sb.ToString());
-        }
-
-        // Item'ı 3 karakterlik kısa sembolle göster (grid log için)
-        private string ItemSymbol(Model.Items.GridItem item)
-        {
-            return item switch
-            {
-                Model.Items.SweetItem s => $" {s.SweetType.ToString().Substring(0, 1)} ",
-                Model.Items.CandyBarItem cb => cb.Direction == Model.Items.CandyBarDirection.Horizontal ? "═══" : " ║ ",
-                Model.Items.CupcakeItem => "CUP",
-                Model.Items.CroissantItem => "CRO",
-                _ => " ? "
-            };
-        }
     }
 }
