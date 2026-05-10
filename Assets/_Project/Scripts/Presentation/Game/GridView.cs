@@ -46,6 +46,7 @@ namespace SweetMatch.Presentation.Game
                 _cellViews[cell.X, cell.Y].Bind(cell, visualConfig);
         }
 
+        public Transform GridRoot => gridRoot;
         public void RenderCell(GridPosition pos)
         {
             if (_model == null || _cellViews == null) return;

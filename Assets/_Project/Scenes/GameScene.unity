@@ -2220,6 +2220,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SweetMatch.Presentation.Animation.BoardAnimator
   gridView: {fileID: 1740306609}
+  canvasRect: {fileID: 1660230183}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

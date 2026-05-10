@@ -101,7 +101,8 @@ namespace SweetMatch.Systems
 
             // CandyBar'ın etkilediği hücreleri al
             var affected = new List<CellModel>();
-            if (clickable is CandyBarItem candyBar)
+            CandyBarItem candyBar = clickable as CandyBarItem;
+            if (candyBar != null)
             {
                 var affectedPositions = candyBar.GetAffectedCells(_grid.Width, _grid.Height);
                 foreach (var p in affectedPositions)
@@ -116,7 +117,12 @@ namespace SweetMatch.Systems
             affected.Add(_grid.GetCell(pos));
 
             _clearSystem.Clear(affected);
-            yield return _animator.PlayClearAnimation(affected);
+
+            // CandyBar'a özel aktivasyon animasyonu, diğer IClickable'lar için generic clear.
+            if (candyBar != null)
+                yield return _animator.PlayCandyBarActivation(candyBar, affected);
+            else
+                yield return _animator.PlayClearAnimation(affected);
 
             yield return ResolveAfterActionRoutine();
         }

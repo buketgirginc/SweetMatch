@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using SweetMatch.Events;
 using SweetMatch.Model;
+using SweetMatch.Model.Items;
 using SweetMatch.Presentation.Game;
 using UnityEngine;
 
@@ -11,12 +12,18 @@ namespace SweetMatch.Presentation.Animation
     public class BoardAnimator : MonoBehaviour
     {
         [SerializeField] private GridView gridView;
+        [SerializeField] private RectTransform canvasRect;
 
         private const float ClearDuration = 0.3f;
         private const float FallDuration = 0.3f;
         private const float FillDuration = 0.3f;
         private const float CroissantExitDuration = 0.2f;
         private const float CroissantExitDistance = 20f;
+
+        // CandyBar magic numbers — fine-tune'da oynanacak.
+        private const float CandyBarSpeed = 1500f;        // pixel/saniye
+        private const float SweetTouchRadius = 35f;       // sweet sprite yarıçapı (delay hesabında geri sayılır)
+        private const float OffscreenPadding = 100f;      // ekran kenarından sonra extra mesafe
 
         private EventBus _eventBus;
         private IReadOnlyList<FallMove> _pendingFalls;
@@ -59,6 +66,81 @@ namespace SweetMatch.Presentation.Animation
                 PlayCroissantExit(cellView);
             }
             yield return new WaitForSeconds(CroissantExitDuration);
+        }
+
+        // CandyBar tıklandığında: orijinal sprite + 1 kopya zıt yönlere ekran dışına uçar.
+        // Yol üzerindeki sweet'ler "touch" hissiyle dalga dalga pop'lanır.
+        public IEnumerator PlayCandyBarActivation(CandyBarItem candyBar, List<CellModel> affectedCells)
+        {
+            var origCellView = gridView.GetCellView(candyBar.Position);
+            var origItemView = origCellView.ItemView;
+            var origTransform = origItemView.transform;
+
+            // Kopyayı oluştur ve orijinalle aynı pozisyona getir.
+            var clone = Instantiate(origItemView.gameObject, gridView.GridRoot);
+            clone.transform.localPosition = origCellView.transform.localPosition;
+            clone.transform.localScale = origTransform.localScale;
+            clone.transform.localRotation = origTransform.localRotation;
+
+            // Render order: ikisi de en öne. Orijinal CellView'ı GridRoot'un en sonuna çıkar.
+            origCellView.transform.SetAsLastSibling();
+            clone.transform.SetAsLastSibling();
+
+            // Hareket yönü ve ekran-dışı mesafe hesabı.
+            // Orijinal pozitif yöne (sağ/yukarı), kopya negatif yöne (sol/aşağı) gider.
+            bool horizontal = candyBar.Direction == CandyBarDirection.Horizontal;
+            Vector2 axis = horizontal ? Vector2.right : Vector2.up;
+
+            // CandyBar'ın Canvas-local pozisyonu (mesafe hesabının referansı).
+            Vector3 candyBarWorld = origCellView.transform.position;
+            Vector3 candyBarCanvasLocal = canvasRect.InverseTransformPoint(candyBarWorld);
+
+            // Canvas yarı boyutu + offscreen padding = kenara olan mesafe formülü.
+            float canvasHalfSize = horizontal ? canvasRect.rect.width / 2f : canvasRect.rect.height / 2f;
+            float candyBarCanvasCoord = horizontal ? candyBarCanvasLocal.x : candyBarCanvasLocal.y;
+            float positiveDistance = canvasHalfSize - candyBarCanvasCoord + OffscreenPadding;
+            float negativeDistance = canvasHalfSize + candyBarCanvasCoord + OffscreenPadding;
+
+            float positiveDuration = positiveDistance / CandyBarSpeed;
+            float negativeDuration = negativeDistance / CandyBarSpeed;
+
+            // Hedef world pozisyonları (Canvas scale'ini hesaba kat).
+            float canvasScale = canvasRect.lossyScale.x;
+            Vector3 axis3D = new Vector3(axis.x, axis.y, 0f);
+            Vector3 origTarget = candyBarWorld + axis3D * positiveDistance * canvasScale;
+            Vector3 cloneTarget = candyBarWorld - axis3D * negativeDistance * canvasScale;
+
+            // İki tween paralel başlar, sabit hız (Linear).
+            origTransform.DOMove(origTarget, positiveDuration).SetEase(Ease.Linear);
+            clone.transform.DOMove(cloneTarget, negativeDuration).SetEase(Ease.Linear);
+
+            // Sequential clear: her sweet için "touch" zamanını hesapla, DelayedCall ile pop tetikle.
+            foreach (var cell in affectedCells)
+            {
+                if (cell.Position == candyBar.Position) continue;  // CandyBar'ın kendi hücresi atlanır
+
+                int cellOffset = horizontal
+                    ? cell.Position.X - candyBar.Position.X
+                    : cell.Position.Y - candyBar.Position.Y;
+
+                bool isPositiveSide = cellOffset > 0;
+                float distancePixels = Mathf.Abs(cellOffset) * (gridView.CellSize + gridView.CellSpacing);
+                float touchDistance = Mathf.Max(0f, distancePixels - SweetTouchRadius);
+                float delay = touchDistance / CandyBarSpeed;
+
+                var targetCellView = gridView.GetCellView(cell.Position);
+                DOVirtual.DelayedCall(delay, () => PlayPopAndShrink(targetCellView));
+            }
+
+            // En uzun süreyi bekle + son pop'un kendi süresinin bitmesi için ek süre.
+            float maxDuration = Mathf.Max(positiveDuration, negativeDuration) + ClearDuration;
+            yield return new WaitForSeconds(maxDuration);
+
+            // Cleanup: kopya destroy, orijinal görünmez, hücre boş render.
+            Destroy(clone);
+            origItemView.SetVisible(false);
+            origTransform.localPosition = Vector3.zero;
+            gridView.RenderCell(candyBar.Position);
         }
 
         public IEnumerator PlayFallAnimation()
@@ -110,7 +192,7 @@ namespace SweetMatch.Presentation.Animation
         }
 
         // CandyBar gibi spawn olan tek bir item'ı görünür hale getirir.
-        // Şu an sadece RenderCell çağırıyor; Commit 5'te scale-in animation eklenecek.
+        // Şu an sadece RenderCell çağırıyor; ileride scale-in animation eklenebilir.
         public IEnumerator PlaySpawnAnimation(GridPosition pos)
         {
             gridView.RenderCell(pos);
