@@ -162,9 +162,12 @@ namespace SweetMatch.Systems
             yield return _animator.PlayFillAnimation();
 
             // Alta düşmüş croissant'ları yakala ve yok et (fade animasyonu oynar)
-            var bottomTriggered = _bottomTrigger.FindTriggeredAtBottom();
-            if (bottomTriggered.Count > 0)
+            // Yeni croissant'lar alta düşebileceğinden cascade olarak tekrarlanır.
+            while (true)
             {
+                var bottomTriggered = _bottomTrigger.FindTriggeredAtBottom();
+                if (bottomTriggered.Count == 0) break;
+
                 _clearSystem.Clear(bottomTriggered);
                 yield return _animator.PlayCroissantExitAnimation(bottomTriggered);
 
