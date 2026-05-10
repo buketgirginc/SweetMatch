@@ -152,8 +152,8 @@ namespace SweetMatch.Bootstrap
             movesView.Initialize(_eventBus, levelConfig.Moves);
             goalPanelView.Initialize(_eventBus, levelConfig, visualConfig);
             endPanelView.Initialize(_eventBus);
+            boardAnimator.Initialize(_eventBus);
         }
-
         private void BuildInitialBoard()
         {
             var builder = new InitialBoardBuilder(_gridModel, levelConfig, _itemFactory);

@@ -132,6 +132,8 @@ namespace SweetMatch.Systems
 
             // 5+ match olduysa tıklanan hücreye CandyBar koy
             bool spawnedCandyBar = _powerUpSpawner.TrySpawnAt(pos, match.Count);
+            if (spawnedCandyBar)
+                yield return _animator.PlaySpawnAnimation(pos);
 
             // Match'in komşularındaki cupcake'leri bul
             var triggeredNeighbors = _neighborTrigger.FindTriggeredNeighbors(match);

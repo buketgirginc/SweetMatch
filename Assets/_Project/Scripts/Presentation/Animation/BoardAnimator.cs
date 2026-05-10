@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using SweetMatch.Events;
 using SweetMatch.Model;
 using SweetMatch.Presentation.Game;
 using UnityEngine;
@@ -12,6 +13,29 @@ namespace SweetMatch.Presentation.Animation
         [SerializeField] private GridView gridView;
 
         private const float ClearDuration = 0.3f;
+        private const float FallDuration = 0.3f;
+        private const float FillDuration = 0.3f;
+
+        private EventBus _eventBus;
+        private IReadOnlyList<FallMove> _pendingFalls;
+        private IReadOnlyList<SpawnInfo> _pendingSpawns;
+
+        public void Initialize(EventBus eventBus)
+        {
+            _eventBus = eventBus;
+            _eventBus.Subscribe<ItemsFellEvent>(OnItemsFell);
+            _eventBus.Subscribe<ItemsSpawnedEvent>(OnItemsSpawned);
+        }
+
+        private void OnDestroy()
+        {
+            _eventBus?.Unsubscribe<ItemsFellEvent>(OnItemsFell);
+            _eventBus?.Unsubscribe<ItemsSpawnedEvent>(OnItemsSpawned);
+        }
+
+        // Event handler'lar payload'u cache'liyor; gerçek animasyonu Coroutine oynatıyor.
+        private void OnItemsFell(ItemsFellEvent e) => _pendingFalls = e.Moves;
+        private void OnItemsSpawned(ItemsSpawnedEvent e) => _pendingSpawns = e.Spawns;
 
         public IEnumerator PlayClearAnimation(List<CellModel> cleared)
         {
@@ -25,13 +49,57 @@ namespace SweetMatch.Presentation.Animation
 
         public IEnumerator PlayFallAnimation()
         {
+            if (_pendingFalls == null || _pendingFalls.Count == 0)
+                yield break;
+
+            foreach (var move in _pendingFalls)
+            {
+                var fromView = gridView.GetCellView(move.From);
+                var toView = gridView.GetCellView(move.To);
+                var t = fromView.ItemView.transform;
+
+                // ItemView eski parent'ında kalır, dünyada hedef CellView'ın yerine uçar.
+                // Animation bitince RenderAll model state'iyle hizalar.
+                t.DOMove(toView.transform.position, FallDuration).SetEase(Ease.OutQuad);
+            }
+
+            yield return new WaitForSeconds(FallDuration);
+
+            _pendingFalls = null;
             gridView.RenderAll();
-            yield break;
         }
 
         public IEnumerator PlayFillAnimation()
         {
+            if (_pendingSpawns == null || _pendingSpawns.Count == 0)
+                yield break;
+
+            // Önce RenderAll: yeni item'lar bind'lenir, sprite'ları yüklenir, görünür olurlar.
             gridView.RenderAll();
+
+            float spawnOffset = gridView.CellSize + gridView.CellSpacing;
+
+            foreach (var spawn in _pendingSpawns)
+            {
+                var cellView = gridView.GetCellView(spawn.Position);
+                var t = cellView.ItemView.transform;
+                Vector3 targetPos = t.position;
+
+                // Bind'lenen item'ı 1 hücre yukarı kaydır, sonra hedefe düşür.
+                t.position = targetPos + Vector3.up * spawnOffset;
+                t.DOMove(targetPos, FillDuration).SetEase(Ease.OutQuad);
+            }
+
+            yield return new WaitForSeconds(FillDuration);
+
+            _pendingSpawns = null;
+        }
+
+        // CandyBar gibi spawn olan tek bir item'ı görünür hale getirir.
+        // Şu an sadece RenderCell çağırıyor; Commit 5'te scale-in animation eklenecek.
+        public IEnumerator PlaySpawnAnimation(GridPosition pos)
+        {
+            gridView.RenderCell(pos);
             yield break;
         }
 

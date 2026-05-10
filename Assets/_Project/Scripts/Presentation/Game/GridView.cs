@@ -46,6 +46,13 @@ namespace SweetMatch.Presentation.Game
                 _cellViews[cell.X, cell.Y].Bind(cell, visualConfig);
         }
 
+        public void RenderCell(GridPosition pos)
+        {
+            if (_model == null || _cellViews == null) return;
+            var cell = _model.GetCell(pos);
+            if (cell == null) return;
+            _cellViews[pos.X, pos.Y].Bind(cell, visualConfig);
+        }
         public CellView GetCellView(GridPosition pos) => _cellViews[pos.X, pos.Y];
 
         private Vector2 CalculatePosition(int x, int y)

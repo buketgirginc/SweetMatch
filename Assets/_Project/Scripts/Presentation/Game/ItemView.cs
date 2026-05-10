@@ -27,6 +27,7 @@ namespace SweetMatch.Presentation.Game
             image.sprite = visual.sprite;
             transform.localScale = Vector3.one * visual.scale;
             transform.localEulerAngles = new Vector3(0, 0, visual.rotation);
+            transform.localPosition = Vector3.zero;
             SetVisible(true);
         }
 
