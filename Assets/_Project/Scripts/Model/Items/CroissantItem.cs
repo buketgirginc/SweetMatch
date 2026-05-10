@@ -10,5 +10,6 @@ namespace SweetMatch.Model.Items
         public override string GetVisualKey() => "croissant";
 
         public override string GetGoalSignature() => "croissant";
+        public override bool CanBeClearedByPowerUp() => false;
     }
 }

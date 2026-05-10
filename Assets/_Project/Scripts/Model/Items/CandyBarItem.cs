@@ -45,5 +45,6 @@ namespace SweetMatch.Model.Items
         }
 
         public override string GetGoalSignature() => null;
+        public override bool CanBeClearedByPowerUp() => false;
     }
 }

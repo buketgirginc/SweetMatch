@@ -107,7 +107,7 @@ namespace SweetMatch.Systems
                 foreach (var p in affectedPositions)
                 {
                     var c = _grid.GetCell(p);
-                    if (c != null && !c.IsEmpty)
+                    if (c != null && !c.IsEmpty && c.Item.CanBeClearedByPowerUp())
                         affected.Add(c);
                 }
             }

@@ -19,7 +19,7 @@ namespace SweetMatch.Model.Items
         public abstract string GetGoalSignature();
 
         public virtual bool CanFall() => true;   //virtual method — "alt sınıf override edebilir, etmek zorunda değil"
-
+        public virtual bool CanBeClearedByPowerUp() => true;
         public virtual void Destroy()
         {
             IsAlive = false;
