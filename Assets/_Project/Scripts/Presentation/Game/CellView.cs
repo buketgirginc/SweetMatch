@@ -9,6 +9,7 @@ namespace SweetMatch.Presentation.Game
     public class CellView : MonoBehaviour, IPointerClickHandler
     {
         [SerializeField] private ItemView itemView;
+        public ItemView ItemView => itemView;
 
         public GridPosition Position { get; private set; }
         private InputHandler _inputHandler;
