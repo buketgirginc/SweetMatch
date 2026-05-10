@@ -34,6 +34,12 @@ Assets/_Project/Art/Particles/
 Assets/_Project/Audio/
 !Assets/_Project/Audio/.gitkeep
 
+# Asset Store ve 3rd party plugins (her geliştirici kendi Asset Store hesabıyla import eder)
+# Demigiant/DOTween dahil — herkes Asset Store'dan kendisi import etmeli
+# DOTweenSettings.asset Resources/ altında ayrı tutulur, runtime config olarak takip edilir
+Assets/Plugins/
+Assets/Plugins.meta
+
 # IDE
 .vs/
 .vscode/
@@ -41,6 +47,7 @@ Assets/_Project/Audio/
 *.csproj
 *.unityproj
 *.sln
+*.slnx
 *.suo
 *.tmp
 *.user
