@@ -2163,6 +2163,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2111604586}
   - component: {fileID: 2111604585}
+  - component: {fileID: 2111604587}
   m_Layer: 0
   m_Name: GameBootstrapper
   m_TagString: Untagged
@@ -2189,6 +2190,7 @@ MonoBehaviour:
   movesView: {fileID: 1246474011}
   goalPanelView: {fileID: 848377713}
   endPanelView: {fileID: 425875494}
+  boardAnimator: {fileID: 2111604587}
   visualConfig: {fileID: 11400000, guid: 3afcfaf593c2ba04c93d53794c62869a, type: 2}
 --- !u!4 &2111604586
 Transform:
@@ -2205,6 +2207,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2111604587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2111604584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e55f4bc5e34eb684d89a284debf8f244, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SweetMatch.Presentation.Animation.BoardAnimator
+  gridView: {fileID: 1740306609}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

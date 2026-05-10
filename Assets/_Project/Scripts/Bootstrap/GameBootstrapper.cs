@@ -2,6 +2,7 @@ using SweetMatch.Data;
 using SweetMatch.Events;
 using SweetMatch.Model;
 using SweetMatch.Systems;
+using SweetMatch.Presentation.Animation;
 using SweetMatch.Presentation.Game;
 using SweetMatch.Presentation.UI;
 using UnityEngine;
@@ -20,6 +21,9 @@ namespace SweetMatch.Bootstrap
         [SerializeField] private MovesView movesView;
         [SerializeField] private GoalPanelView goalPanelView;
         [SerializeField] private EndPanelView endPanelView;
+
+        [Header("Animation")]
+        [SerializeField] private BoardAnimator boardAnimator;
 
         [Header("Data")]
         [SerializeField] private ItemVisualConfigSO visualConfig;
@@ -96,6 +100,11 @@ namespace SweetMatch.Bootstrap
                 Debug.LogError("[Bootstrap] EndPanelView is missing!");
                 return false;
             }
+            if (boardAnimator == null)
+            {
+                Debug.LogError("[Bootstrap] BoardAnimator is missing!");
+                return false;
+            }
             return true;
         }
 
@@ -132,7 +141,8 @@ namespace SweetMatch.Bootstrap
                 _matchDetector, _clearSystem,
                 _neighborTrigger, _powerUpSpawner,
                 _fallSystem, _fillSystem, _bottomTrigger,
-                _movesTracker, _stateMachine);
+                _movesTracker, _stateMachine,
+                boardAnimator, this);
         }
 
         private void BuildViews()
@@ -142,10 +152,6 @@ namespace SweetMatch.Bootstrap
             movesView.Initialize(_eventBus, levelConfig.Moves);
             goalPanelView.Initialize(_eventBus, levelConfig, visualConfig);
             endPanelView.Initialize(_eventBus);
-
-            _eventBus.Subscribe<ItemsClearedEvent>(_ => gridView.RenderAll());
-            _eventBus.Subscribe<ItemsFellEvent>(_ => gridView.RenderAll());
-            _eventBus.Subscribe<ItemsSpawnedEvent>(_ => gridView.RenderAll());
         }
 
         private void BuildInitialBoard()

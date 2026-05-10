@@ -1,8 +1,10 @@
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using SweetMatch.Events;
 using SweetMatch.Model;
 using SweetMatch.Model.Items;
+using SweetMatch.Presentation.Animation;
+using UnityEngine;
 
 namespace SweetMatch.Systems
 {
@@ -19,6 +21,8 @@ namespace SweetMatch.Systems
         private readonly BottomTrigger _bottomTrigger;
         private readonly MovesTracker _movesTracker;
         private readonly GameStateMachine _stateMachine;
+        private readonly BoardAnimator _animator;
+        private readonly MonoBehaviour _coroutineHost;
 
         public MoveResolver(
             EventBus eventBus,
@@ -31,7 +35,9 @@ namespace SweetMatch.Systems
             FillSystem fillSystem,
             BottomTrigger bottomTrigger,
             MovesTracker movesTracker,
-            GameStateMachine stateMachine)
+            GameStateMachine stateMachine,
+            BoardAnimator animator,
+            MonoBehaviour coroutineHost)
         {
             _eventBus = eventBus;
             _grid = grid;
@@ -44,33 +50,41 @@ namespace SweetMatch.Systems
             _bottomTrigger = bottomTrigger;
             _movesTracker = movesTracker;
             _stateMachine = stateMachine;
+            _animator = animator;
+            _coroutineHost = coroutineHost;
 
             _eventBus.Subscribe<CellClickedEvent>(OnCellClicked);
         }
 
+        // Event handler void olmak zorunda → Coroutine'i başlatan ince wrapper.
+        private void OnCellClicked(CellClickedEvent e)
+        {
+            _coroutineHost.StartCoroutine(OnCellClickedRoutine(e));
+        }
+
         // Tıklama akışının ana giriş noktası.
         // Item türüne göre farklı senaryolara dallanıyoruz.
-        private void OnCellClicked(CellClickedEvent e)
+        private IEnumerator OnCellClickedRoutine(CellClickedEvent e)
         {
             var cell = _grid.GetCell(e.Position);
 
             // Boş hücreye veya geçersiz pozisyona tıklandı → görmezden gel
-            if (cell == null || cell.IsEmpty) return;
+            if (cell == null || cell.IsEmpty) yield break;
 
             var item = cell.Item;
 
             // Senaryo 1: Tıklanabilir item (CandyBar gibi)
             if (item is IClickable clickable)
             {
-                ResolveClickableAction(e.Position, clickable);
-                return;
+                yield return ResolveClickableActionRoutine(e.Position, clickable);
+                yield break;
             }
 
             // Senaryo 2: Match'lenebilir item (Sweet)
             if (item is IMatchable)
             {
-                ResolveMatchAction(e.Position);
-                return;
+                yield return ResolveMatchActionRoutine(e.Position);
+                yield break;
             }
 
             // Senaryo 3: Cupcake/Croissant gibi tıklamaya tepkisiz item'lar
@@ -78,7 +92,7 @@ namespace SweetMatch.Systems
         }
 
         // CandyBar tıklandığında: etkilenen hücreleri bulup patlat
-        private void ResolveClickableAction(GridPosition pos, IClickable clickable)
+        private IEnumerator ResolveClickableActionRoutine(GridPosition pos, IClickable clickable)
         {
             _stateMachine.SetState(GameState.Resolving);
             _movesTracker.TryUseMove();
@@ -102,14 +116,16 @@ namespace SweetMatch.Systems
             affected.Add(_grid.GetCell(pos));
 
             _clearSystem.Clear(affected);
-            ResolveAfterAction();
+            yield return _animator.PlayClearAnimation(affected);
+
+            yield return ResolveAfterActionRoutine();
         }
 
         // Sweet tıklandığında: match var mı kontrol et, varsa işle
-        private void ResolveMatchAction(GridPosition pos)
+        private IEnumerator ResolveMatchActionRoutine(GridPosition pos)
         {
             var match = _matchDetector.FindMatchAt(pos);
-            if (match == null) return;  // match yoksa hamle harcanmaz
+            if (match == null) yield break;  // match yoksa hamle harcanmaz
 
             _stateMachine.SetState(GameState.Resolving);
             _movesTracker.TryUseMove();
@@ -129,22 +145,32 @@ namespace SweetMatch.Systems
                 toClear.RemoveAll(c => c.Position == pos);
 
             _clearSystem.Clear(toClear);
-            ResolveAfterAction();
+            yield return _animator.PlayClearAnimation(toClear);
+
+            yield return ResolveAfterActionRoutine();
         }
 
         // Patlatma sonrası ortak akış: fall, fill, bottom check
-        private void ResolveAfterAction()
+        private IEnumerator ResolveAfterActionRoutine()
         {
             _fallSystem.ApplyFall();
+            yield return _animator.PlayFallAnimation();
+
             _fillSystem.FillEmpty();
+            yield return _animator.PlayFillAnimation();
 
             // Alta düşmüş croissant'ları yakala ve patlat
             var bottomTriggered = _bottomTrigger.FindTriggeredAtBottom();
             if (bottomTriggered.Count > 0)
             {
                 _clearSystem.Clear(bottomTriggered);
+                yield return _animator.PlayClearAnimation(bottomTriggered);
+
                 _fallSystem.ApplyFall();
+                yield return _animator.PlayFallAnimation();
+
                 _fillSystem.FillEmpty();
+                yield return _animator.PlayFillAnimation();
             }
 
             // Akış bittiğinde Idle'a dön (Won/Lost'a geçtiysek olduğu yerde kal)
