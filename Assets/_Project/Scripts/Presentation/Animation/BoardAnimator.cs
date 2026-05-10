@@ -15,6 +15,8 @@ namespace SweetMatch.Presentation.Animation
         private const float ClearDuration = 0.3f;
         private const float FallDuration = 0.3f;
         private const float FillDuration = 0.3f;
+        private const float CroissantExitDuration = 0.2f;
+        private const float CroissantExitDistance = 20f;
 
         private EventBus _eventBus;
         private IReadOnlyList<FallMove> _pendingFalls;
@@ -45,6 +47,18 @@ namespace SweetMatch.Presentation.Animation
                 PlayPopAndShrink(cellView);
             }
             yield return new WaitForSeconds(ClearDuration);
+        }
+
+        // Croissant'lar alta düşüp kaybolurken oynatılır.
+        // bottomTriggered listesi sadece croissant içerir (BottomTrigger garantiler).
+        public IEnumerator PlayCroissantExitAnimation(List<CellModel> bottomTriggered)
+        {
+            foreach (var cell in bottomTriggered)
+            {
+                var cellView = gridView.GetCellView(cell.Position);
+                PlayCroissantExit(cellView);
+            }
+            yield return new WaitForSeconds(CroissantExitDuration);
         }
 
         public IEnumerator PlayFallAnimation()
@@ -118,6 +132,27 @@ namespace SweetMatch.Presentation.Animation
             {
                 itemView.SetVisible(false);
                 t.localScale = originalScale;
+            });
+        }
+
+        // Aşağı doğru hafif kayma + fade-out (paralel). 0.2s.
+        // OnComplete'te position ve alpha resetlenir → ItemView tekrar Bind'lenebilir.
+        private void PlayCroissantExit(CellView cellView)
+        {
+            var itemView = cellView.ItemView;
+            var t = itemView.transform;
+            var image = itemView.Image;
+            var originalY = t.localPosition.y;
+            var originalColor = image.color;
+
+            Sequence seq = DOTween.Sequence();
+            seq.Append(t.DOLocalMoveY(originalY - CroissantExitDistance, CroissantExitDuration));
+            seq.Join(image.DOFade(0f, CroissantExitDuration));
+            seq.OnComplete(() =>
+            {
+                itemView.SetVisible(false);
+                t.localPosition = new Vector3(t.localPosition.x, originalY, t.localPosition.z);
+                image.color = originalColor;
             });
         }
     }

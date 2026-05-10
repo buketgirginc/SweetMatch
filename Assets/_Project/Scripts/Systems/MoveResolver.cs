@@ -161,12 +161,12 @@ namespace SweetMatch.Systems
             _fillSystem.FillEmpty();
             yield return _animator.PlayFillAnimation();
 
-            // Alta düşmüş croissant'ları yakala ve patlat
+            // Alta düşmüş croissant'ları yakala ve yok et (fade animasyonu oynar)
             var bottomTriggered = _bottomTrigger.FindTriggeredAtBottom();
             if (bottomTriggered.Count > 0)
             {
                 _clearSystem.Clear(bottomTriggered);
-                yield return _animator.PlayClearAnimation(bottomTriggered);
+                yield return _animator.PlayCroissantExitAnimation(bottomTriggered);
 
                 _fallSystem.ApplyFall();
                 yield return _animator.PlayFallAnimation();

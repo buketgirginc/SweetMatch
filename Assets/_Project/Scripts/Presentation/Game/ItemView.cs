@@ -8,6 +8,7 @@ namespace SweetMatch.Presentation.Game
     public class ItemView : MonoBehaviour
     {
         [SerializeField] private Image image;
+        public Image Image => image;
 
         public void Bind(GridItem item, ItemVisualConfigSO visualConfig)
         {
