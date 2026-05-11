@@ -10,6 +10,11 @@ namespace SweetMatch.Presentation.UI
         [SerializeField] private Image iconImage;
         [SerializeField] private TMP_Text remainingText;
 
+        public Image IconImage => iconImage;
+
+        private int _localCount;
+        public int LocalCount => _localCount;
+
         public void Setup(GoalEntry goal, ItemVisualConfigSO visualConfig)
         {
             string visualKey = SignatureToVisualKey(goal.Signature);
@@ -21,7 +26,14 @@ namespace SweetMatch.Presentation.UI
                 iconImage.preserveAspect = true;
             }
 
-            UpdateRemaining(goal.Count);
+            _localCount = goal.Count;
+            UpdateRemaining(_localCount);
+        }
+
+        public void Decrement()
+        {
+            _localCount = Mathf.Max(0, _localCount - 1);
+            UpdateRemaining(_localCount);
         }
 
         public void UpdateRemaining(int remaining)

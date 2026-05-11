@@ -22,6 +22,7 @@ namespace SweetMatch.Systems
         private readonly MovesTracker _movesTracker;
         private readonly GameStateMachine _stateMachine;
         private readonly BoardAnimator _animator;
+        private readonly GoalFlyController _flyController;
         private readonly MonoBehaviour _coroutineHost;
 
         public MoveResolver(
@@ -37,6 +38,7 @@ namespace SweetMatch.Systems
             MovesTracker movesTracker,
             GameStateMachine stateMachine,
             BoardAnimator animator,
+            GoalFlyController flyController,
             MonoBehaviour coroutineHost)
         {
             _eventBus = eventBus;
@@ -51,47 +53,38 @@ namespace SweetMatch.Systems
             _movesTracker = movesTracker;
             _stateMachine = stateMachine;
             _animator = animator;
+            _flyController = flyController;
             _coroutineHost = coroutineHost;
 
             _eventBus.Subscribe<CellClickedEvent>(OnCellClicked);
         }
 
-        // Event handler void olmak zorunda → Coroutine'i başlatan ince wrapper.
         private void OnCellClicked(CellClickedEvent e)
         {
             _coroutineHost.StartCoroutine(OnCellClickedRoutine(e));
         }
 
-        // Tıklama akışının ana giriş noktası.
-        // Item türüne göre farklı senaryolara dallanıyoruz.
         private IEnumerator OnCellClickedRoutine(CellClickedEvent e)
         {
             var cell = _grid.GetCell(e.Position);
 
-            // Boş hücreye veya geçersiz pozisyona tıklandı → görmezden gel
             if (cell == null || cell.IsEmpty) yield break;
 
             var item = cell.Item;
 
-            // Senaryo 1: Tıklanabilir item (CandyBar gibi)
             if (item is IClickable clickable)
             {
                 yield return ResolveClickableActionRoutine(e.Position, clickable);
                 yield break;
             }
 
-            // Senaryo 2: Match'lenebilir item (Sweet)
             if (item is IMatchable)
             {
                 yield return ResolveMatchActionRoutine(e.Position);
                 yield break;
             }
-
-            // Senaryo 3: Cupcake/Croissant gibi tıklamaya tepkisiz item'lar
-            // Hiçbir şey yapma, hamle harcanmaz
         }
 
-        // CandyBar tıklandığında: etkilenen hücreleri bulup patlat
         private IEnumerator ResolveClickableActionRoutine(GridPosition pos, IClickable clickable)
         {
             _stateMachine.SetState(GameState.Resolving);
@@ -99,7 +92,6 @@ namespace SweetMatch.Systems
 
             clickable.OnClick();
 
-            // CandyBar'ın etkilediği hücreleri al
             var affected = new List<CellModel>();
             CandyBarItem candyBar = clickable as CandyBarItem;
             if (candyBar != null)
@@ -113,42 +105,49 @@ namespace SweetMatch.Systems
                 }
             }
 
-            // CandyBar'ın kendisi de patlayanlar listesinde
             affected.Add(_grid.GetCell(pos));
 
-            _clearSystem.Clear(affected);
-
-            // CandyBar'a özel aktivasyon animasyonu, diğer IClickable'lar için generic clear.
+            // CandyBar akışında item referanslarını Clear'dan önce yakalarız.
+            // Clear sonrası cell.Item null olur, ama fly tetiği için item bilgisi gerekli.
+            List<(CellModel cell, GridItem item)> affectedSnapshot = null;
             if (candyBar != null)
-                yield return _animator.PlayCandyBarActivation(candyBar, affected);
+            {
+                affectedSnapshot = new List<(CellModel, GridItem)>();
+                foreach (var c in affected)
+                    affectedSnapshot.Add((c, c.Item));
+            }
+
+            // CandyBar akışında goal fly'lar Clear anında değil, koreografi içindeki DelayedCall'larda tetiklenir.
+            // ItemsClearedEvent'in fly başlatmasını geçici olarak bastırırız.
+            if (candyBar != null) _flyController.SetFlySuppressed(true);
+            _clearSystem.Clear(affected);
+            if (candyBar != null) _flyController.SetFlySuppressed(false);
+
+            if (candyBar != null)
+                yield return _animator.PlayCandyBarActivation(candyBar, affectedSnapshot);
             else
                 yield return _animator.PlayClearAnimation(affected);
 
             yield return ResolveAfterActionRoutine();
         }
 
-        // Sweet tıklandığında: match var mı kontrol et, varsa işle
         private IEnumerator ResolveMatchActionRoutine(GridPosition pos)
         {
             var match = _matchDetector.FindMatchAt(pos);
-            if (match == null) yield break;  // match yoksa hamle harcanmaz
+            if (match == null) yield break;
 
             _stateMachine.SetState(GameState.Resolving);
             _movesTracker.TryUseMove();
 
-            // 5+ match olduysa tıklanan hücreye CandyBar koy
             bool spawnedCandyBar = _powerUpSpawner.TrySpawnAt(pos, match.Count);
             if (spawnedCandyBar)
                 yield return _animator.PlaySpawnAnimation(pos);
 
-            // Match'in komşularındaki cupcake'leri bul
             var triggeredNeighbors = _neighborTrigger.FindTriggeredNeighbors(match);
 
-            // Patlatılacak hücre listesini birleştir
             var toClear = new List<CellModel>(match);
             toClear.AddRange(triggeredNeighbors);
 
-            // CandyBar yerleştirildiyse o hücre patlatılmayacak
             if (spawnedCandyBar)
                 toClear.RemoveAll(c => c.Position == pos);
 
@@ -158,7 +157,6 @@ namespace SweetMatch.Systems
             yield return ResolveAfterActionRoutine();
         }
 
-        // Patlatma sonrası ortak akış: fall, fill, bottom check
         private IEnumerator ResolveAfterActionRoutine()
         {
             _fallSystem.ApplyFall();
@@ -167,8 +165,6 @@ namespace SweetMatch.Systems
             _fillSystem.FillEmpty();
             yield return _animator.PlayFillAnimation();
 
-            // Alta düşmüş croissant'ları yakala ve yok et (fade animasyonu oynar)
-            // Yeni croissant'lar alta düşebileceğinden cascade olarak tekrarlanır.
             while (true)
             {
                 var bottomTriggered = _bottomTrigger.FindTriggeredAtBottom();
@@ -184,7 +180,6 @@ namespace SweetMatch.Systems
                 yield return _animator.PlayFillAnimation();
             }
 
-            // Akış bittiğinde Idle'a dön (Won/Lost'a geçtiysek olduğu yerde kal)
             if (_stateMachine.Current == GameState.Resolving)
                 _stateMachine.SetState(GameState.Idle);
         }

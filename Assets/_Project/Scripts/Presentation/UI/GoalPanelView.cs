@@ -27,8 +27,11 @@ namespace SweetMatch.Presentation.UI
             _eventBus.Subscribe<GoalProgressEvent>(OnGoalProgress);
         }
 
+        // Sweet'lerin sayaç güncellemesi BoardAnimator'a delege edildi (fly bitiminde DecrementGoal).
+        // Cupcake, Croissant gibi special item'lar fly oynamaz; sayaç event üzerinden anında düşer.
         private void OnGoalProgress(GoalProgressEvent e)
         {
+            if (e.Signature.StartsWith("sweet:")) return;
             if (_goalViews.TryGetValue(e.Signature, out var view))
                 view.UpdateRemaining(e.Remaining);
         }
@@ -36,6 +39,20 @@ namespace SweetMatch.Presentation.UI
         private void OnDestroy()
         {
             _eventBus?.Unsubscribe<GoalProgressEvent>(OnGoalProgress);
+        }
+
+        // Goal item'ının view'ına dışarıdan erişim (BoardAnimator fly target için).
+        public GoalItemView GetGoalView(string signature)
+        {
+            _goalViews.TryGetValue(signature, out var view);
+            return view;
+        }
+
+        // Sayacı 1 azaltır. BoardAnimator fly tamamlanınca çağırır (sweet'ler için).
+        public void DecrementGoal(string signature)
+        {
+            if (_goalViews.TryGetValue(signature, out var view))
+                view.Decrement();
         }
     }
 }

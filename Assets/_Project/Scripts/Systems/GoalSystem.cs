@@ -39,7 +39,7 @@ namespace SweetMatch.Systems
             }
 
             if (AllGoalsComplete())
-                _eventBus.Raise(new AllGoalsCompletedEvent());
+                _eventBus.Raise(new GoalsLogicallyCompletedEvent());
         }
 
         private bool AllGoalsComplete()

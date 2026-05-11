@@ -24,6 +24,7 @@ namespace SweetMatch.Bootstrap
 
         [Header("Animation")]
         [SerializeField] private BoardAnimator boardAnimator;
+        [SerializeField] private GoalFlyController goalFlyController;
 
         [Header("Data")]
         [SerializeField] private ItemVisualConfigSO visualConfig;
@@ -105,6 +106,12 @@ namespace SweetMatch.Bootstrap
                 Debug.LogError("[Bootstrap] BoardAnimator is missing!");
                 return false;
             }
+
+            if (goalFlyController == null)
+            {
+                Debug.LogError("[Bootstrap] GoalFlyController is missing!");
+                return false;
+            }
             return true;
         }
 
@@ -142,7 +149,7 @@ namespace SweetMatch.Bootstrap
                 _neighborTrigger, _powerUpSpawner,
                 _fallSystem, _fillSystem, _bottomTrigger,
                 _movesTracker, _stateMachine,
-                boardAnimator, this);
+                boardAnimator, goalFlyController, this);
         }
 
         private void BuildViews()
@@ -153,6 +160,7 @@ namespace SweetMatch.Bootstrap
             goalPanelView.Initialize(_eventBus, levelConfig, visualConfig);
             endPanelView.Initialize(_eventBus);
             boardAnimator.Initialize(_eventBus);
+            goalFlyController.Initialize(_eventBus);
         }
         private void BuildInitialBoard()
         {
