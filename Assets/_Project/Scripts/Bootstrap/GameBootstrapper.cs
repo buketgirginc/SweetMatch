@@ -4,6 +4,7 @@ using SweetMatch.Events;
 using SweetMatch.Model;
 using SweetMatch.Systems;
 using SweetMatch.Presentation.Animation;
+using SweetMatch.Presentation.Effects;
 using SweetMatch.Presentation.Game;
 using SweetMatch.Presentation.UI;
 using UnityEngine;
@@ -26,6 +27,9 @@ namespace SweetMatch.Bootstrap
         [Header("Animation")]
         [SerializeField] private BoardAnimator boardAnimator;
         [SerializeField] private GoalFlyController goalFlyController;
+
+        [Header("Effects")]
+        [SerializeField] private SoundController soundController;
 
         [Header("Data")]
         [SerializeField] private ItemVisualConfigSO visualConfig;
@@ -113,6 +117,12 @@ namespace SweetMatch.Bootstrap
                 Debug.LogError("[Bootstrap] GoalFlyController is missing!");
                 return false;
             }
+
+            if (soundController == null)
+            {
+                Debug.LogError("[Bootstrap] SoundController is missing!");
+                return false;
+            }
             return true;
         }
 
@@ -162,6 +172,7 @@ namespace SweetMatch.Bootstrap
             endPanelView.Initialize(_eventBus);
             boardAnimator.Initialize(_eventBus);
             goalFlyController.Initialize(_eventBus);
+            soundController.Initialize(_eventBus);
         }
 
         private void BuildInitialBoard()

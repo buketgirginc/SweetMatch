@@ -1,5 +1,7 @@
+using System.Collections;
 using DG.Tweening;
 using SweetMatch.Events;
+using SweetMatch.Presentation.Effects;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,8 +16,10 @@ namespace SweetMatch.Presentation.UI
         [SerializeField] private TMP_Text titleText;
         [SerializeField] private Button restartButton;
         [SerializeField] private Button closeButton;
+        [SerializeField] private SoundController soundController;
 
         private const float EntryDuration = 0.3f;
+        private const float ButtonClickDelay = 0.25f;  // ses başlasın diye scene/quit öncesi bekleme
 
         private EventBus _eventBus;
 
@@ -59,13 +63,28 @@ namespace SweetMatch.Presentation.UI
             panelContent.SetActive(false);
         }
 
+        // Ses başladıktan kısa süre sonra eylemi gerçekleştir.
         private void OnRestartClicked()
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            StartCoroutine(RestartRoutine());
         }
 
         private void OnCloseClicked()
         {
+            StartCoroutine(CloseRoutine());
+        }
+
+        private IEnumerator RestartRoutine()
+        {
+            if (soundController != null) soundController.PlayButtonClick();
+            yield return new WaitForSeconds(ButtonClickDelay);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        private IEnumerator CloseRoutine()
+        {
+            if (soundController != null) soundController.PlayButtonClick();
+            yield return new WaitForSeconds(ButtonClickDelay);
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else

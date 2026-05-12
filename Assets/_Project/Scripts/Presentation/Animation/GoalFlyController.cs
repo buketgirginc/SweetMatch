@@ -191,6 +191,9 @@ namespace SweetMatch.Presentation.Animation
             Destroy(clone);
             goalPanelView.DecrementGoal(signature);
 
+            // Goal collect sesi için event.
+            _eventBus.Raise(new GoalCollectedEvent());
+
             // Reservation'ı düş — bu fly artık aktif değil, sonraki sayımlar bunu hesaba katmaz.
             if (_activeFlyReservations.TryGetValue(signature, out var count))
                 _activeFlyReservations[signature] = Mathf.Max(0, count - 1);
