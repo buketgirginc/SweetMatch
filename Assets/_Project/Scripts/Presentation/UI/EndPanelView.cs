@@ -1,3 +1,4 @@
+using DG.Tweening;
 using SweetMatch.Events;
 using TMPro;
 using UnityEngine;
@@ -13,6 +14,8 @@ namespace SweetMatch.Presentation.UI
         [SerializeField] private TMP_Text titleText;
         [SerializeField] private Button restartButton;
         [SerializeField] private Button closeButton;
+
+        private const float EntryDuration = 0.3f;
 
         private EventBus _eventBus;
 
@@ -40,10 +43,18 @@ namespace SweetMatch.Presentation.UI
             titleText.text = title;
             backdrop.SetActive(true);
             panelContent.SetActive(true);
+
+            // Scale-in bounce: 0'dan 1'e OutBack ile hafif overshoot (pop hissi).
+            panelContent.transform.localScale = Vector3.zero;
+            panelContent.transform.DOScale(Vector3.one, EntryDuration).SetEase(Ease.OutBack);
         }
 
         private void Hide()
         {
+            // Aktif tween varsa durdur — restart sonrası scale tutarlı kalır.
+            panelContent.transform.DOKill();
+            panelContent.transform.localScale = Vector3.one;
+
             backdrop.SetActive(false);
             panelContent.SetActive(false);
         }
