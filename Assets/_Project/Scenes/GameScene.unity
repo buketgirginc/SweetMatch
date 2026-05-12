@@ -2271,6 +2271,7 @@ MonoBehaviour:
   gridView: {fileID: 1740306609}
   canvasRect: {fileID: 1660230183}
   goalFlyController: {fileID: 250708683}
+  gridConfig: {fileID: 11400000, guid: 4598141de7560224a934e1659985ec01, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

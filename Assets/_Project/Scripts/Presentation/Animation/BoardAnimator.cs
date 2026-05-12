@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using SweetMatch.Data;
 using SweetMatch.Events;
 using SweetMatch.Model;
 using SweetMatch.Model.Items;
@@ -10,14 +11,15 @@ using UnityEngine;
 namespace SweetMatch.Presentation.Animation
 {
     // Board üzerindeki sweet'lerin görsel olaylarını animate eder: pop, fall, fill, croissant exit,
-    // CandyBar fly-out koreografisi. Goal collection fly'ları GoalFlyController'da yönetilir;
-    // CandyBar koreografisi sırasında her sweet'in pop anında GoalFlyController.TryStartFlyForSweet
-    // çağırarak goal fly'larını dalga dalga tetikler.
+    // CandyBar fly-out koreografisi, initial board cascade entry. Goal collection fly'ları
+    // GoalFlyController'da yönetilir; CandyBar koreografisi sırasında her sweet'in pop anında
+    // GoalFlyController.TryStartFlyForSweet çağırarak goal fly'larını dalga dalga tetikler.
     public class BoardAnimator : MonoBehaviour
     {
         [SerializeField] private GridView gridView;
         [SerializeField] private RectTransform canvasRect;
         [SerializeField] private GoalFlyController goalFlyController;
+        [SerializeField] private GridConfigSO gridConfig;
 
         private const float ClearDuration = 0.3f;
         private const float FallDuration = 0.3f;
@@ -28,6 +30,11 @@ namespace SweetMatch.Presentation.Animation
         private const float CandyBarSpeed = 1500f;
         private const float SweetTouchRadius = 35f;
         private const float OffscreenPadding = 100f;
+
+        // Initial cascade parametreleri.
+        private const float CascadeColumnDelay = 0.03f;     // sütun başına gecikme (soldan sağa stagger)
+        private const float CascadeDropDuration = 0.3f;     // her sweet'in düşme süresi
+        private const float CascadeStartOffsetCells = 2f; // grid üst kenarından kaç hücre yukarıdan başlasın
 
         private EventBus _eventBus;
         private IReadOnlyList<FallMove> _pendingFalls;
@@ -49,6 +56,53 @@ namespace SweetMatch.Presentation.Animation
         private void OnItemsFell(ItemsFellEvent e) => _pendingFalls = e.Moves;
         private void OnItemsSpawned(ItemsSpawnedEvent e) => _pendingSpawns = e.Spawns;
 
+        // Oyun açılışında grid sweet'leri yukarıdan kademeli düşerek yerleşir.
+        // Bootstrapper tarafından Loading state'inde çağrılır, biterken state Idle'a geçer.
+        // Her sütun bir öncekinden CascadeColumnDelay kadar gecikmeli başlar (soldan sağa stagger).
+        public IEnumerator PlayInitialBoardCascade()
+        {
+            int width = gridConfig.Width;
+            int height = gridConfig.Height;
+
+            // World-space yukarı offset: canvas-local piksel mesafeyi world birimine çevir.
+            // canvasRect.lossyScale ile Canvas Screen Space - Camera'nın world ölçeği hesaba katılır.
+            float canvasLocalOffset = (gridView.CellSize + gridView.CellSpacing) * CascadeStartOffsetCells;
+            Vector3 worldUpOffset = Vector3.up * canvasLocalOffset * canvasRect.lossyScale.y;
+
+            // Tüm ItemView'ları yukarı offset'le — sweet'ler grid'in bir hücre üzerinden başlar.
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    var cellView = gridView.GetCellView(new GridPosition(x, y));
+                    if (cellView == null) continue;
+
+                    cellView.ItemView.transform.position += worldUpOffset;
+                }
+            }
+
+            // Sütun sütun düşüş tetikle. Her sütun CascadeColumnDelay sonra başlar.
+            for (int x = 0; x < width; x++)
+            {
+                float columnDelay = x * CascadeColumnDelay;
+
+                for (int y = 0; y < height; y++)
+                {
+                    var cellView = gridView.GetCellView(new GridPosition(x, y));
+                    if (cellView == null) continue;
+
+                    var itemTransform = cellView.ItemView.transform;
+                    Vector3 targetPos = itemTransform.position - worldUpOffset;
+                    itemTransform.DOMove(targetPos, CascadeDropDuration)
+                        .SetDelay(columnDelay)
+                        .SetEase(Ease.OutQuad);
+                }
+            }
+
+            // Bekleme süresi: son sütun delay'i + bir sweet'in düşme süresi.
+            float totalDuration = (width - 1) * CascadeColumnDelay + CascadeDropDuration;
+            yield return new WaitForSeconds(totalDuration);
+        }
         public IEnumerator PlayClearAnimation(List<CellModel> cleared)
         {
             foreach (var cell in cleared)

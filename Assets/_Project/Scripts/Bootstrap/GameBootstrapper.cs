@@ -1,3 +1,4 @@
+using System.Collections;
 using SweetMatch.Data;
 using SweetMatch.Events;
 using SweetMatch.Model;
@@ -46,16 +47,16 @@ namespace SweetMatch.Bootstrap
         private MoveResolver _moveResolver;
         private IItemFactory _itemFactory;
 
-        private void Start()
+        private IEnumerator Start()
         {
-            if (!ValidateReferences()) return;
+            if (!ValidateReferences()) yield break;
 
             BuildEventBus();
             BuildModel();
             BuildSystems();
             BuildViews();
             BuildInitialBoard();
-            StartGame();
+            yield return StartGame();
         }
 
         // Inspector referanslarının dolu olduğunu kontrol et
@@ -162,6 +163,7 @@ namespace SweetMatch.Bootstrap
             boardAnimator.Initialize(_eventBus);
             goalFlyController.Initialize(_eventBus);
         }
+
         private void BuildInitialBoard()
         {
             var builder = new InitialBoardBuilder(_gridModel, levelConfig, _itemFactory);
@@ -169,10 +171,12 @@ namespace SweetMatch.Bootstrap
             gridView.RenderAll();
         }
 
-        private void StartGame()
+        // Initial cascade animasyonu oyun başlamadan oynar; state Loading'de kalır
+        // (InputHandler tıklamayı yutar), animasyon bitince Idle'a geçer.
+        private IEnumerator StartGame()
         {
+            yield return boardAnimator.PlayInitialBoardCascade();
             _stateMachine.SetState(GameState.Idle);
         }
-
     }
 }
