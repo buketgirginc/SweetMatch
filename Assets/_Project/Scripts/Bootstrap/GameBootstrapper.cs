@@ -30,6 +30,7 @@ namespace SweetMatch.Bootstrap
 
         [Header("Effects")]
         [SerializeField] private SoundController soundController;
+        [SerializeField] private VFXController vfxController;
 
         [Header("Data")]
         [SerializeField] private ItemVisualConfigSO visualConfig;
@@ -123,6 +124,11 @@ namespace SweetMatch.Bootstrap
                 Debug.LogError("[Bootstrap] SoundController is missing!");
                 return false;
             }
+            if (vfxController == null)
+            {
+                Debug.LogError("[Bootstrap] VFXController is missing!");
+                return false;
+            }
             return true;
         }
 
@@ -173,6 +179,7 @@ namespace SweetMatch.Bootstrap
             boardAnimator.Initialize(_eventBus);
             goalFlyController.Initialize(_eventBus);
             soundController.Initialize(_eventBus);
+            vfxController.Initialize(_eventBus);
         }
 
         private void BuildInitialBoard()

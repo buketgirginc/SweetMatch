@@ -935,6 +935,55 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 643716685}
   m_CullTransparentMesh: 1
+--- !u!1 &645898186
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 645898187}
+  - component: {fileID: 645898188}
+  m_Layer: 0
+  m_Name: VFXController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &645898187
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 645898186}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2111604586}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &645898188
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 645898186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a56675b854409c141bfb0bb31a3917fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SweetMatch.Presentation.Effects.VFXController
+  gridView: {fileID: 1740306609}
+  canvasRect: {fileID: 1660230183}
+  sweetPopPrefab: {fileID: 867618948575588531, guid: 00f820982b2c03f48837ff1ebad25326, type: 3}
+  cupcakePopPrefab: {fileID: 7996162554581527497, guid: 64041005f0499e4478a75846e8baef60, type: 3}
+  goalCollectPrefab: {fileID: 4543976122268662427, guid: 87100a6429e1e6b458656286c4a4d3f9, type: 3}
 --- !u!1 &809894410
 GameObject:
   m_ObjectHideFlags: 0
@@ -2392,6 +2441,7 @@ MonoBehaviour:
   boardAnimator: {fileID: 2111604587}
   goalFlyController: {fileID: 250708683}
   soundController: {fileID: 1938372215}
+  vfxController: {fileID: 645898188}
   visualConfig: {fileID: 11400000, guid: 3afcfaf593c2ba04c93d53794c62869a, type: 2}
 --- !u!4 &2111604586
 Transform:
@@ -2408,6 +2458,7 @@ Transform:
   m_Children:
   - {fileID: 250708684}
   - {fileID: 1938372213}
+  - {fileID: 645898187}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2111604587
