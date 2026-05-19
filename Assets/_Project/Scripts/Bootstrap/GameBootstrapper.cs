@@ -50,7 +50,7 @@ namespace SweetMatch.Bootstrap
         private InputHandler _inputHandler;
         private MoveResolver _moveResolver;
         private IItemFactory _itemFactory;
-        private InitialBoardBuilder _initialBoardBuilder;
+        private BoardBuilder _boardBuilder;
 
         private IEnumerator Start()
         {
@@ -107,9 +107,9 @@ namespace SweetMatch.Bootstrap
             _neighborTrigger = new NeighborTrigger(_gridModel);
             _bottomTrigger = new BottomTrigger(_gridModel);
 
-            // InitialBoardBuilder MatchDetector'a bağımlı (HasAnyMatch),
+            // BoardBuilder MatchDetector'a bağımlı (HasAnyMatch),
             // MoveResolver'a inject edilecek (deadlock'ta Shuffle) → MoveResolver'dan ÖNCE yaratılır.
-            _initialBoardBuilder = new InitialBoardBuilder(
+            _boardBuilder = new BoardBuilder(
                 _gridModel, levelConfig, _itemFactory, _matchDetector);
 
             _inputHandler = new InputHandler(_stateMachine, _eventBus);
@@ -121,7 +121,7 @@ namespace SweetMatch.Bootstrap
                 _fallSystem, _fillSystem, _bottomTrigger,
                 _movesTracker, _stateMachine,
                 boardAnimator, goalFlyController,
-                _initialBoardBuilder, this);
+                _boardBuilder, this);
         }
 
         private void BuildViews()
@@ -137,11 +137,11 @@ namespace SweetMatch.Bootstrap
             vfxController.Initialize(_eventBus);
         }
 
-        // Sadece modeli kurar. View bind'i (RenderAll) artık cascade'in içinde —
+        // Sadece modeli kurar. View bind'i (RenderAll) cascade'in içinde —
         // tek sorumlu nokta, hem initial hem shuffle aynı yolu kullanır.
         private void BuildInitialBoard()
         {
-            _initialBoardBuilder.Build();
+            _boardBuilder.Build();
         }
 
         private IEnumerator StartGame()

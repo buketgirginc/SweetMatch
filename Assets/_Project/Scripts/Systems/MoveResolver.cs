@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using SweetMatch.Bootstrap;
 using SweetMatch.Events;
 using SweetMatch.Model;
 using SweetMatch.Model.Items;
@@ -24,7 +23,7 @@ namespace SweetMatch.Systems
         private readonly GameStateMachine _stateMachine;
         private readonly BoardAnimator _animator;
         private readonly GoalFlyController _flyController;
-        private readonly InitialBoardBuilder _boardBuilder;
+        private readonly BoardBuilder _boardBuilder;
         private readonly MonoBehaviour _coroutineHost;
 
         public MoveResolver(
@@ -41,7 +40,7 @@ namespace SweetMatch.Systems
             GameStateMachine stateMachine,
             BoardAnimator animator,
             GoalFlyController flyController,
-            InitialBoardBuilder boardBuilder,
+            BoardBuilder boardBuilder,
             MonoBehaviour coroutineHost)
         {
             _eventBus = eventBus;

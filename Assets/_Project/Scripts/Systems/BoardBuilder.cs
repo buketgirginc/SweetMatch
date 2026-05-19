@@ -2,12 +2,14 @@ using System.Collections.Generic;
 using SweetMatch.Data;
 using SweetMatch.Model;
 using SweetMatch.Model.Items;
-using SweetMatch.Systems;
 using UnityEngine;
 
-namespace SweetMatch.Bootstrap
+namespace SweetMatch.Systems
 {
-    public class InitialBoardBuilder
+    // Grid'i level config'e göre kurar (Build) ve runtime deadlock'ta yeniden karıştırır (Shuffle).
+    // Board generation + deadlock recovery sorumluluğu — bir System (GridModel üzerinde oyun
+    // kuralı işletir, presentation tanımaz, pure C#). FillSystem/MatchDetector ile kardeş.
+    public class BoardBuilder
     {
         // Initial board'da bir match bu boyutu aşamaz (en baştan powerup önleme)
         private const int MAX_INITIAL_MATCH = 4;
@@ -16,8 +18,8 @@ namespace SweetMatch.Bootstrap
         private readonly IItemFactory _factory;
         private readonly MatchDetector _matchDetector;
 
-        public InitialBoardBuilder(GridModel grid, LevelConfigSO config,
-                                   IItemFactory factory, MatchDetector matchDetector)
+        public BoardBuilder(GridModel grid, LevelConfigSO config,
+                            IItemFactory factory, MatchDetector matchDetector)
         {
             _grid = grid;
             _config = config;
