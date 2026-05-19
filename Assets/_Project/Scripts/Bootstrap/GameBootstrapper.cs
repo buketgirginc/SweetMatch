@@ -14,7 +14,7 @@ namespace SweetMatch.Bootstrap
     public class GameBootstrapper : MonoBehaviour
     {
         [Header("Configuration")]
-        [SerializeField] private LevelConfigSO levelConfig;
+        [SerializeField] private LevelConfigSO[] levels;
         [SerializeField] private GridConfigSO gridConfig;
 
         [Header("Views")]
@@ -52,11 +52,14 @@ namespace SweetMatch.Bootstrap
         private IItemFactory _itemFactory;
         private BoardBuilder _boardBuilder;
 
+        private LevelConfigSO _activeLevel;
+
         private IEnumerator Start()
         {
             if (!ValidateReferences()) yield break;
 
             BuildEventBus();
+            SelectActiveLevel();
             BuildModel();
             BuildSystems();
             BuildViews();
@@ -66,7 +69,7 @@ namespace SweetMatch.Bootstrap
 
         private bool ValidateReferences()
         {
-            if (levelConfig == null) { Debug.LogError("[Bootstrap] LevelConfig is missing!"); return false; }
+            if (levels == null || levels.Length == 0) { Debug.LogError("[Bootstrap] Levels array is empty!"); return false; }
             if (gridConfig == null) { Debug.LogError("[Bootstrap] GridConfig is missing!"); return false; }
             if (gridView == null) { Debug.LogError("[Bootstrap] GridView is missing!"); return false; }
             if (frameView == null) { Debug.LogError("[Bootstrap] GridFrameView is missing!"); return false; }
@@ -86,6 +89,13 @@ namespace SweetMatch.Bootstrap
             _eventBus = new EventBus();
         }
 
+        // PlayerPrefs'ten gelen index dış kaynaklı (eski build farklı level sayısı yazmış olabilir) → clamp.
+        private void SelectActiveLevel()
+        {
+            int index = Mathf.Clamp(LevelProgress.CurrentIndex, 0, levels.Length - 1);
+            _activeLevel = levels[index];
+        }
+
         private void BuildModel()
         {
             _gridModel = new GridModel(gridConfig.Width, gridConfig.Height);
@@ -96,8 +106,8 @@ namespace SweetMatch.Bootstrap
             _itemFactory = new ItemFactory();
 
             _stateMachine = new GameStateMachine(_eventBus);
-            _movesTracker = new MovesTracker(levelConfig.Moves, _eventBus);
-            _goalSystem = new GoalSystem(levelConfig.Goals, _eventBus);
+            _movesTracker = new MovesTracker(_activeLevel.Moves, _eventBus);
+            _goalSystem = new GoalSystem(_activeLevel.Goals, _eventBus);
 
             _matchDetector = new MatchDetector(_gridModel);
             _clearSystem = new ClearSystem(_gridModel, _eventBus);
@@ -110,7 +120,7 @@ namespace SweetMatch.Bootstrap
             // BoardBuilder MatchDetector'a bağımlı (HasAnyMatch),
             // MoveResolver'a inject edilecek (deadlock'ta Shuffle) → MoveResolver'dan ÖNCE yaratılır.
             _boardBuilder = new BoardBuilder(
-                _gridModel, levelConfig, _itemFactory, _matchDetector);
+                _gridModel, _activeLevel, _itemFactory, _matchDetector);
 
             _inputHandler = new InputHandler(_stateMachine, _eventBus);
 
@@ -128,8 +138,8 @@ namespace SweetMatch.Bootstrap
         {
             gridView.Build(_gridModel, _inputHandler);
             frameView.Fit(gridConfig.Width, gridConfig.Height, gridView.CellSize, gridView.CellSpacing);
-            movesView.Initialize(_eventBus, levelConfig.Moves);
-            goalPanelView.Initialize(_eventBus, levelConfig, visualConfig);
+            movesView.Initialize(_eventBus, _activeLevel.Moves);
+            goalPanelView.Initialize(_eventBus, _activeLevel, visualConfig);
             endPanelView.Initialize(_eventBus);
             boardAnimator.Initialize(_eventBus);
             goalFlyController.Initialize(_eventBus);
