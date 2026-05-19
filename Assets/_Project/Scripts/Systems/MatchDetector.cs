@@ -33,6 +33,23 @@ namespace SweetMatch.Systems
             return result.Count >= 2 ? result : null;
         }
 
+        // Grid'de oynanabilir herhangi bir match (2+ aynı tür yan yana) var mı?
+        // Deadlock tespiti için: hiç match yoksa grid kilitlenmiş demektir.
+        // FindMatchAt'i yeniden kullanır — ayrı flood-fill kodu yok (DRY).
+        public bool HasAnyMatch()
+        {
+            foreach (var cell in _grid.AllCells())
+            {
+                if (cell.IsEmpty) continue;
+                if (cell.Item is not IMatchable) continue;
+
+                if (FindMatchAt(cell.Position) != null)
+                    return true;
+            }
+
+            return false;
+        }
+
         // 4 yöne yayılarak aynı key'e sahip komşuları toplar.
         // visited seti sonsuz döngüyü engelliyor.
         private void FloodFill(GridPosition pos, string key,

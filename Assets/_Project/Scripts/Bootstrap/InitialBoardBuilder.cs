@@ -14,12 +14,15 @@ namespace SweetMatch.Bootstrap
         private readonly GridModel _grid;
         private readonly LevelConfigSO _config;
         private readonly IItemFactory _factory;
+        private readonly MatchDetector _matchDetector;
 
-        public InitialBoardBuilder(GridModel grid, LevelConfigSO config, IItemFactory factory)
+        public InitialBoardBuilder(GridModel grid, LevelConfigSO config,
+                                   IItemFactory factory, MatchDetector matchDetector)
         {
             _grid = grid;
             _config = config;
             _factory = factory;
+            _matchDetector = matchDetector;
         }
 
         // Grid'i level config'e göre kurar.
@@ -32,10 +35,27 @@ namespace SweetMatch.Bootstrap
 
             FillRemainingRandom();
 
-            if (!HasAnyMatch())
+            if (!_matchDetector.HasAnyMatch())
                 ForceCreateOneMatch();
         }
 
+        // Runtime deadlock'ta çağrılır: sadece SweetItem hücrelerini temizleyip
+        // yeniden rastgele doldurur. Özel item'lar (Cupcake/Croissant/CandyBar)
+        // IsEmpty olmadığı için FillRemainingRandom tarafından atlanır → yerinde kalır.
+        // Build mantığını yeniden kullanır (DRY): aynı MAX_INITIAL_MATCH + match garantisi.
+        public void Shuffle()
+        {
+            foreach (var cell in _grid.AllCells())
+            {
+                if (!cell.IsEmpty && cell.Item is SweetItem)
+                    cell.Clear();
+            }
+
+            FillRemainingRandom();
+
+            if (!_matchDetector.HasAnyMatch())
+                ForceCreateOneMatch();
+        }
 
         // InitialCells listesindeki hücrelere belirtilen item'ları yerleştir
         private void ApplyInitialLayout()
@@ -97,7 +117,8 @@ namespace SweetMatch.Bootstrap
             }
         }
 
-        // Verilen pozisyondan başlayarak aynı sweet türündeki bağlı hücreleri sayar
+        // Verilen pozisyondan başlayarak aynı sweet türündeki bağlı hücreleri sayar.
+        // MAX_INITIAL_MATCH limit kontrolü için (board generation kalite kuralı).
         private int FloodFillSize(GridPosition start, SweetType type)
         {
             var visited = new HashSet<GridPosition>();
@@ -119,27 +140,6 @@ namespace SweetMatch.Bootstrap
             count += FloodFillRecursive(pos.Left(), type, visited);
             count += FloodFillRecursive(pos.Right(), type, visited);
             return count;
-        }
-
-        // Grid'de en az bir match var mı (2+ aynı tip yan yana)?
-        private bool HasAnyMatch()
-        {
-            var visited = new HashSet<GridPosition>();
-
-            foreach (var cell in _grid.AllCells())
-            {
-                if (cell.IsEmpty) continue;
-                if (visited.Contains(cell.Position)) continue;
-                if (!(cell.Item is SweetItem sweet)) continue;
-
-                int blobSize = FloodFillSize(cell.Position, sweet.SweetType);
-                if (blobSize >= 2) return true;
-
-                // Visited'e eklemek için tekrar flood fill - performans az ama initial board için OK
-                FloodFillRecursive(cell.Position, sweet.SweetType, visited);
-            }
-
-            return false;
         }
 
         // Hiç match yoksa: rastgele bir hücreye komşusunun tipini ata

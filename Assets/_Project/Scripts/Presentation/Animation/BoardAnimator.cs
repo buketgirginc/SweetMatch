@@ -56,11 +56,15 @@ namespace SweetMatch.Presentation.Animation
         private void OnItemsFell(ItemsFellEvent e) => _pendingFalls = e.Moves;
         private void OnItemsSpawned(ItemsSpawnedEvent e) => _pendingSpawns = e.Spawns;
 
-        // Oyun açılışında grid sweet'leri yukarıdan kademeli düşerek yerleşir.
-        // Bootstrapper tarafından Loading state'inde çağrılır, biterken state Idle'a geçer.
-        // Her sütun bir öncekinden CascadeColumnDelay kadar gecikmeli başlar (soldan sağa stagger).
+        // Oyun açılışında VE runtime shuffle sonrasında grid sweet'leri yukarıdan
+        // kademeli düşerek yerleşir. Başında RenderAll ile güncel model bind edilir
+        // (shuffle modeli değiştirir, view'ın yeni sweet'leri göstermesi için şart) —
+        // bu yüzden tek sorumlu nokta: cascade hem bind hem reveal yapar.
+        // Bootstrapper tarafından Loading state'inde, MoveResolver tarafından deadlock'ta çağrılır.
         public IEnumerator PlayInitialBoardCascade()
         {
+            gridView.RenderAll();
+
             int width = gridConfig.Width;
             int height = gridConfig.Height;
 

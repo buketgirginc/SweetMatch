@@ -35,7 +35,6 @@ namespace SweetMatch.Bootstrap
         [Header("Data")]
         [SerializeField] private ItemVisualConfigSO visualConfig;
 
-        // Sistemler — sahne içinde tek instance
         private EventBus _eventBus;
         private GridModel _gridModel;
         private GameStateMachine _stateMachine;
@@ -51,6 +50,7 @@ namespace SweetMatch.Bootstrap
         private InputHandler _inputHandler;
         private MoveResolver _moveResolver;
         private IItemFactory _itemFactory;
+        private InitialBoardBuilder _initialBoardBuilder;
 
         private IEnumerator Start()
         {
@@ -64,71 +64,20 @@ namespace SweetMatch.Bootstrap
             yield return StartGame();
         }
 
-        // Inspector referanslarının dolu olduğunu kontrol et
         private bool ValidateReferences()
         {
-            if (levelConfig == null)
-            {
-                Debug.LogError("[Bootstrap] LevelConfig is missing!");
-                return false;
-            }
-            if (gridConfig == null)
-            {
-                Debug.LogError("[Bootstrap] GridConfig is missing!");
-                return false;
-            }
-            if (gridView == null)
-            {
-                Debug.LogError("[Bootstrap] GridView is missing!");
-                return false;
-            }
-            if (frameView == null)
-            {
-                Debug.LogError("[Bootstrap] GridFrameView is missing!");
-                return false;
-            }
-            if (movesView == null)
-            {
-                Debug.LogError("[Bootstrap] MovesView is missing!");
-                return false;
-            }
-            if (goalPanelView == null)
-            {
-                Debug.LogError("[Bootstrap] GoalPanelView is missing!");
-                return false;
-            }
-            if (visualConfig == null)
-            {
-                Debug.LogError("[Bootstrap] ItemVisualConfig is missing!");
-                return false;
-            }
-            if (endPanelView == null)
-            {
-                Debug.LogError("[Bootstrap] EndPanelView is missing!");
-                return false;
-            }
-            if (boardAnimator == null)
-            {
-                Debug.LogError("[Bootstrap] BoardAnimator is missing!");
-                return false;
-            }
-
-            if (goalFlyController == null)
-            {
-                Debug.LogError("[Bootstrap] GoalFlyController is missing!");
-                return false;
-            }
-
-            if (soundController == null)
-            {
-                Debug.LogError("[Bootstrap] SoundController is missing!");
-                return false;
-            }
-            if (vfxController == null)
-            {
-                Debug.LogError("[Bootstrap] VFXController is missing!");
-                return false;
-            }
+            if (levelConfig == null) { Debug.LogError("[Bootstrap] LevelConfig is missing!"); return false; }
+            if (gridConfig == null) { Debug.LogError("[Bootstrap] GridConfig is missing!"); return false; }
+            if (gridView == null) { Debug.LogError("[Bootstrap] GridView is missing!"); return false; }
+            if (frameView == null) { Debug.LogError("[Bootstrap] GridFrameView is missing!"); return false; }
+            if (movesView == null) { Debug.LogError("[Bootstrap] MovesView is missing!"); return false; }
+            if (goalPanelView == null) { Debug.LogError("[Bootstrap] GoalPanelView is missing!"); return false; }
+            if (visualConfig == null) { Debug.LogError("[Bootstrap] ItemVisualConfig is missing!"); return false; }
+            if (endPanelView == null) { Debug.LogError("[Bootstrap] EndPanelView is missing!"); return false; }
+            if (boardAnimator == null) { Debug.LogError("[Bootstrap] BoardAnimator is missing!"); return false; }
+            if (goalFlyController == null) { Debug.LogError("[Bootstrap] GoalFlyController is missing!"); return false; }
+            if (soundController == null) { Debug.LogError("[Bootstrap] SoundController is missing!"); return false; }
+            if (vfxController == null) { Debug.LogError("[Bootstrap] VFXController is missing!"); return false; }
             return true;
         }
 
@@ -158,6 +107,11 @@ namespace SweetMatch.Bootstrap
             _neighborTrigger = new NeighborTrigger(_gridModel);
             _bottomTrigger = new BottomTrigger(_gridModel);
 
+            // InitialBoardBuilder MatchDetector'a bağımlı (HasAnyMatch),
+            // MoveResolver'a inject edilecek (deadlock'ta Shuffle) → MoveResolver'dan ÖNCE yaratılır.
+            _initialBoardBuilder = new InitialBoardBuilder(
+                _gridModel, levelConfig, _itemFactory, _matchDetector);
+
             _inputHandler = new InputHandler(_stateMachine, _eventBus);
 
             _moveResolver = new MoveResolver(
@@ -166,7 +120,8 @@ namespace SweetMatch.Bootstrap
                 _neighborTrigger, _powerUpSpawner,
                 _fallSystem, _fillSystem, _bottomTrigger,
                 _movesTracker, _stateMachine,
-                boardAnimator, goalFlyController, this);
+                boardAnimator, goalFlyController,
+                _initialBoardBuilder, this);
         }
 
         private void BuildViews()
@@ -182,15 +137,13 @@ namespace SweetMatch.Bootstrap
             vfxController.Initialize(_eventBus);
         }
 
+        // Sadece modeli kurar. View bind'i (RenderAll) artık cascade'in içinde —
+        // tek sorumlu nokta, hem initial hem shuffle aynı yolu kullanır.
         private void BuildInitialBoard()
         {
-            var builder = new InitialBoardBuilder(_gridModel, levelConfig, _itemFactory);
-            builder.Build();
-            gridView.RenderAll();
+            _initialBoardBuilder.Build();
         }
 
-        // Initial cascade animasyonu oyun başlamadan oynar; state Loading'de kalır
-        // (InputHandler tıklamayı yutar), animasyon bitince Idle'a geçer.
         private IEnumerator StartGame()
         {
             yield return boardAnimator.PlayInitialBoardCascade();

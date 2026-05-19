@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using SweetMatch.Bootstrap;
 using SweetMatch.Events;
 using SweetMatch.Model;
 using SweetMatch.Model.Items;
@@ -23,6 +24,7 @@ namespace SweetMatch.Systems
         private readonly GameStateMachine _stateMachine;
         private readonly BoardAnimator _animator;
         private readonly GoalFlyController _flyController;
+        private readonly InitialBoardBuilder _boardBuilder;
         private readonly MonoBehaviour _coroutineHost;
 
         public MoveResolver(
@@ -39,6 +41,7 @@ namespace SweetMatch.Systems
             GameStateMachine stateMachine,
             BoardAnimator animator,
             GoalFlyController flyController,
+            InitialBoardBuilder boardBuilder,
             MonoBehaviour coroutineHost)
         {
             _eventBus = eventBus;
@@ -54,6 +57,7 @@ namespace SweetMatch.Systems
             _stateMachine = stateMachine;
             _animator = animator;
             _flyController = flyController;
+            _boardBuilder = boardBuilder;
             _coroutineHost = coroutineHost;
 
             _eventBus.Subscribe<CellClickedEvent>(OnCellClicked);
@@ -180,8 +184,30 @@ namespace SweetMatch.Systems
                 yield return _animator.PlayFillAnimation();
             }
 
+            // Deadlock kontrolü: oynanabilir hiç match YOK ve tıklanabilir power-up (CandyBar) YOK ise
+            // grid kilitlenmiş demektir → karıştır, cascade ile yeniden göster.
+            // Shuffle kendi içinde match garantiler (ForceCreateOneMatch), tek shuffle yeterli.
+            if (!_matchDetector.HasAnyMatch() && !HasAnyClickable())
+            {
+                _boardBuilder.Shuffle();
+                yield return _animator.PlayInitialBoardCascade();
+            }
+
             if (_stateMachine.Current == GameState.Resolving)
                 _stateMachine.SetState(GameState.Idle);
+        }
+
+        // Grid'de tıklanabilir bir item (CandyBar) var mı?
+        // Varsa oyuncu deadlock'u onunla kırabilir, shuffle gereksiz.
+        // Cupcake/Croissant IClickable değil (sadece trigger ile patlar), dahil değil.
+        private bool HasAnyClickable()
+        {
+            foreach (var cell in _grid.AllCells())
+            {
+                if (cell.IsEmpty) continue;
+                if (cell.Item is IClickable) return true;
+            }
+            return false;
         }
     }
 }
