@@ -8,6 +8,9 @@ namespace SweetMatch.Systems
 
         public int Remaining { get; private set; }
 
+        // Hamle kalmadı mı? Lose değerlendirmesi için MoveResolver akış sonunda okur.
+        public bool IsOutOfMoves => Remaining <= 0;
+
         public MovesTracker(int initialMoves, EventBus eventBus)
         {
             Remaining = initialMoves;
@@ -15,18 +18,15 @@ namespace SweetMatch.Systems
         }
 
         // Bir hamle harcar. Hamle yoksa false döner.
-        // Caller (MoveResolver) bunu match yapıldığında çağırır.
+        // NoMovesLeftEvent BURADA raise EDİLMEZ — hamlenin sonucu (goal tamamlandı mı?)
+        // henüz belli değil. Lose kararı hamle tamamen çözüldükten sonra MoveResolver'da
+        // verilir; o ana kadar goal tamamlandıysa zaten Won olur (win önceliği, race yok).
         public bool TryUseMove()
         {
             if (Remaining <= 0) return false;
 
             Remaining--;
             _eventBus.Raise(new MovesChangedEvent(Remaining));
-
-            // Hamle bittiyse ayrıca özel event fırlat — GameStateMachine bunu dinliyor
-            if (Remaining == 0)
-                _eventBus.Raise(new NoMovesLeftEvent());
-
             return true;
         }
     }

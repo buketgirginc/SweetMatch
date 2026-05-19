@@ -35,7 +35,10 @@ namespace SweetMatch.Systems
             _eventBus.Raise(new GameStateChangedEvent(previous, newState));
         }
 
-        // Geçiş kuralları — Adım 5'teki state diyagramının kod karşılığı
+        // Geçiş kuralları. Win terminal ve önceliklidir: Lost→Won bir güvenlik ağıdır
+        // (normal akışta MoveResolver lose'u win'den sonra değerlendirdiği için tetiklenmez,
+        // ama CandyBar/croissant zinciri gibi edge-case'lerde win'in lose'u ezmesini garanti eder).
+        // Won→Lost asla geçerli değil — kazanılan oyun kaybedilemez.
         private bool IsValidTransition(GameState from, GameState to)
         {
             return (from, to) switch
@@ -45,6 +48,7 @@ namespace SweetMatch.Systems
                 (GameState.Resolving, GameState.Idle) => true,
                 (GameState.Resolving, GameState.Won) => true,
                 (GameState.Resolving, GameState.Lost) => true,
+                (GameState.Lost, GameState.Won) => true,
                 _ => false
             };
         }
@@ -54,7 +58,8 @@ namespace SweetMatch.Systems
             SetState(GameState.Won);
         }
 
-        // Win öncelikli: hamle bittiğinde zaten kazanmışsak Lost'a geçme
+        // Win öncelikli: zaten kazanmışsak hamle bitse de Lost'a geçme.
+        // (MoveResolver zaten Won'sa NoMovesLeftEvent raise etmiyor, bu ikinci güvenlik.)
         private void OnNoMovesLeft(NoMovesLeftEvent e)
         {
             if (Current != GameState.Won)

@@ -192,6 +192,19 @@ namespace SweetMatch.Systems
                 yield return _animator.PlayInitialBoardCascade();
             }
 
+            // Win/lose değerlendirmesi hamlenin TÜM sonuçları çözüldükten SONRA yapılır.
+            // Bu sıra kritik: goal bu hamlede tamamlandıysa GoalsLogicallyCompletedEvent
+            // zinciri zaten state'i Won'a almıştır (fly'lar bitince). Bu yüzden lose'u en
+            // sonda kontrol ederiz — Won isek hiç Lost'a geçmeyiz (win önceliği, race yok).
+            if (_stateMachine.Current == GameState.Won)
+                yield break;
+
+            if (_movesTracker.IsOutOfMoves)
+            {
+                _eventBus.Raise(new NoMovesLeftEvent());
+                yield break;
+            }
+
             if (_stateMachine.Current == GameState.Resolving)
                 _stateMachine.SetState(GameState.Idle);
         }
