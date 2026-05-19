@@ -12,6 +12,10 @@ namespace SweetMatch.Presentation.UI
 
         public Image IconImage => iconImage;
 
+        // Goal ikonunun world-space genişliği (lossyScale dahil).
+        // Fly animation kopyasının bitiş boyutunu buna eşitlemek için kullanılır.
+        public float IconWorldWidth =>
+            iconImage.rectTransform.rect.width * iconImage.rectTransform.lossyScale.x;
         private int _localCount;
         public int LocalCount => _localCount;
 

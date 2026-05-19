@@ -162,7 +162,14 @@ namespace SweetMatch.Presentation.Animation
             clonedItemView.SetVisible(true);
 
             Vector3 startScale = cloneRect.localScale;
-            Vector3 endScale = startScale * EndScaleFactor;
+            // Bitiş scale'i: klonun world genişliğini goal ikonun world genişliğine eşitle.
+            // Sabit oran (%45) yerine hedef ikonun gerçek boyutundan hesaplanır →
+            // kopya ikon üzerine tam oturur, "biraz küçük/büyük" hissi kalkar.
+            float cloneWorldWidth = cloneRect.rect.width * cloneRect.lossyScale.x;
+            float targetScaleRatio = cloneWorldWidth > 0.0001f
+                ? goalView.IconWorldWidth / cloneWorldWidth
+                : EndScaleFactor;
+            Vector3 endScale = startScale * targetScaleRatio;
 
             // Bezier control point: tepe noktası yukarı, X ekseni rastgele sapma.
             // Her fly farklı yörünge → doğal hissi, robotik dizilim yok.
