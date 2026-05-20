@@ -15,7 +15,7 @@ MonoBehaviour:
   Moves: 22
   Goals:
   - Signature: sweet:star
-    Count: 18
+    Count: 16
   - Signature: sweet:donut
     Count: 15
   - Signature: cupcake

@@ -21,6 +21,7 @@ namespace SweetMatch.Bootstrap
         [SerializeField] private GridView gridView;
         [SerializeField] private GridFrameView frameView;
         [SerializeField] private MovesView movesView;
+        [SerializeField] private LevelLabelView levelLabelView;
         [SerializeField] private GoalPanelView goalPanelView;
         [SerializeField] private EndPanelView endPanelView;
 
@@ -74,6 +75,7 @@ namespace SweetMatch.Bootstrap
             if (gridView == null) { Debug.LogError("[Bootstrap] GridView is missing!"); return false; }
             if (frameView == null) { Debug.LogError("[Bootstrap] GridFrameView is missing!"); return false; }
             if (movesView == null) { Debug.LogError("[Bootstrap] MovesView is missing!"); return false; }
+            if (levelLabelView == null) { Debug.LogError("[Bootstrap] LevelLabelView is missing!"); return false; }
             if (goalPanelView == null) { Debug.LogError("[Bootstrap] GoalPanelView is missing!"); return false; }
             if (visualConfig == null) { Debug.LogError("[Bootstrap] ItemVisualConfig is missing!"); return false; }
             if (endPanelView == null) { Debug.LogError("[Bootstrap] EndPanelView is missing!"); return false; }
@@ -139,6 +141,7 @@ namespace SweetMatch.Bootstrap
             gridView.Build(_gridModel, _inputHandler);
             frameView.Fit(gridConfig.Width, gridConfig.Height, gridView.CellSize, gridView.CellSpacing);
             movesView.Initialize(_eventBus, _activeLevel.Moves);
+            levelLabelView.Initialize(LevelProgress.CurrentIndex + 1);
             goalPanelView.Initialize(_eventBus, _activeLevel, visualConfig);
             endPanelView.Initialize(_eventBus, levels.Length);
             boardAnimator.Initialize(_eventBus);
