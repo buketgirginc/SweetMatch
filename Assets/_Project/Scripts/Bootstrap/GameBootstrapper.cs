@@ -24,6 +24,7 @@ namespace SweetMatch.Bootstrap
         [SerializeField] private LevelLabelView levelLabelView;
         [SerializeField] private GoalPanelView goalPanelView;
         [SerializeField] private EndPanelView endPanelView;
+        [SerializeField] private StartPanelView startPanelView;
 
         [Header("Animation")]
         [SerializeField] private BoardAnimator boardAnimator;
@@ -65,6 +66,13 @@ namespace SweetMatch.Bootstrap
             BuildSystems();
             BuildViews();
             BuildInitialBoard();
+
+            if (!LevelProgress.HasSeenStartScreen)
+            {
+                yield return startPanelView.ShowAndWaitForClick();
+                LevelProgress.MarkStartScreenSeen();
+            }
+
             yield return StartGame();
         }
 
@@ -79,6 +87,7 @@ namespace SweetMatch.Bootstrap
             if (goalPanelView == null) { Debug.LogError("[Bootstrap] GoalPanelView is missing!"); return false; }
             if (visualConfig == null) { Debug.LogError("[Bootstrap] ItemVisualConfig is missing!"); return false; }
             if (endPanelView == null) { Debug.LogError("[Bootstrap] EndPanelView is missing!"); return false; }
+            if (startPanelView == null) { Debug.LogError("[Bootstrap] StartPanelView is missing!"); return false; }
             if (boardAnimator == null) { Debug.LogError("[Bootstrap] BoardAnimator is missing!"); return false; }
             if (goalFlyController == null) { Debug.LogError("[Bootstrap] GoalFlyController is missing!"); return false; }
             if (soundController == null) { Debug.LogError("[Bootstrap] SoundController is missing!"); return false; }

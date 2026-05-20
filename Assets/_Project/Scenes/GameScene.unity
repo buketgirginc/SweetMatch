@@ -3388,6 +3388,7 @@ MonoBehaviour:
   levelLabelView: {fileID: 1934599453}
   goalPanelView: {fileID: 848377713}
   endPanelView: {fileID: 425875494}
+  startPanelView: {fileID: 1440739428}
   boardAnimator: {fileID: 2111604587}
   goalFlyController: {fileID: 250708683}
   soundController: {fileID: 1938372215}
