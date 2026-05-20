@@ -140,7 +140,7 @@ namespace SweetMatch.Bootstrap
             frameView.Fit(gridConfig.Width, gridConfig.Height, gridView.CellSize, gridView.CellSpacing);
             movesView.Initialize(_eventBus, _activeLevel.Moves);
             goalPanelView.Initialize(_eventBus, _activeLevel, visualConfig);
-            endPanelView.Initialize(_eventBus);
+            endPanelView.Initialize(_eventBus, levels.Length);
             boardAnimator.Initialize(_eventBus);
             goalFlyController.Initialize(_eventBus);
             soundController.Initialize(_eventBus);

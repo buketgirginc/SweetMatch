@@ -332,6 +332,7 @@ MonoBehaviour:
   panelContent: {fileID: 590483401}
   titleText: {fileID: 1419856782}
   restartButton: {fileID: 1845225921}
+  restartButtonLabel: {fileID: 631350375}
   closeButton: {fileID: 1774061975}
   soundController: {fileID: 1938372215}
 --- !u!1 &482619470

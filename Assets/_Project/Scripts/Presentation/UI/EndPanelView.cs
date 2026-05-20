@@ -2,6 +2,7 @@ using System.Collections;
 using DG.Tweening;
 using SweetMatch.Events;
 using SweetMatch.Presentation.Effects;
+using SweetMatch.Systems;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,6 +16,7 @@ namespace SweetMatch.Presentation.UI
         [SerializeField] private GameObject panelContent;
         [SerializeField] private TMP_Text titleText;
         [SerializeField] private Button restartButton;
+        [SerializeField] private TMP_Text restartButtonLabel;
         [SerializeField] private Button closeButton;
         [SerializeField] private SoundController soundController;
 
@@ -22,10 +24,14 @@ namespace SweetMatch.Presentation.UI
         private const float ButtonClickDelay = 0.25f;  // ses başlasın diye scene/quit öncesi bekleme
 
         private EventBus _eventBus;
+        private int _totalLevels;
+        private bool _won;
+        private bool _wonAtLastLevel;
 
-        public void Initialize(EventBus bus)
+        public void Initialize(EventBus bus, int totalLevels)
         {
             _eventBus = bus;
+            _totalLevels = totalLevels;
             Hide();
 
             _eventBus.Subscribe<GameStateChangedEvent>(OnStateChanged);
@@ -37,14 +43,23 @@ namespace SweetMatch.Presentation.UI
         private void OnStateChanged(GameStateChangedEvent e)
         {
             if (e.Current == GameState.Won)
-                Show("You Won!");
+            {
+                _won = true;
+                _wonAtLastLevel = LevelProgress.CurrentIndex >= _totalLevels - 1;
+                Show("You Won!", _wonAtLastLevel ? "Restart Game" : "Next Level");
+            }
             else if (e.Current == GameState.Lost)
-                Show("Game Over");
+            {
+                _won = false;
+                _wonAtLastLevel = false;
+                Show("Game Over", "Restart");
+            }
         }
 
-        private void Show(string title)
+        private void Show(string title, string restartLabel)
         {
             titleText.text = title;
+            restartButtonLabel.text = restartLabel;
             backdrop.SetActive(true);
             panelContent.SetActive(true);
 
@@ -78,6 +93,14 @@ namespace SweetMatch.Presentation.UI
         {
             if (soundController != null) soundController.PlayButtonClick();
             yield return new WaitForSeconds(ButtonClickDelay);
+
+            // Progression kararı reload'dan ÖNCE yazılmalı — Bootstrapper yeni sahnede okuyacak.
+            if (_wonAtLastLevel)
+                LevelProgress.Reset();
+            else if (_won)
+                LevelProgress.Advance(_totalLevels - 1);
+            // Lost: index dokunulmaz, aynı level reload.
+
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
