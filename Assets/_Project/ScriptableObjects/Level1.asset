@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b8f396fb061ea4d8604344da481a9f, type: 3}
+  m_Name: Level1
+  m_EditorClassIdentifier: Assembly-CSharp::SweetMatch.Data.LevelConfigSO
+  Moves: 25
+  Goals:
+  - Signature: sweet:cookie
+    Count: 10
+  - Signature: sweet:star
+    Count: 8
+  - Signature: sweet:donut
+    Count: 6
+  UseInitialLayout: 1
+  InitialCells:
+  - X: 2
+    Y: 4
+    ItemKey: sweet:cookie
+  - X: 3
+    Y: 4
+    ItemKey: sweet:cookie
+  - X: 2
+    Y: 3
+    ItemKey: sweet:cookie
+  - X: 4
+    Y: 4
+    ItemKey: sweet:cookie

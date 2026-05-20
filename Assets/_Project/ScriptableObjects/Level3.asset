@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b8f396fb061ea4d8604344da481a9f, type: 3}
+  m_Name: Level3
+  m_EditorClassIdentifier: Assembly-CSharp::SweetMatch.Data.LevelConfigSO
+  Moves: 22
+  Goals:
+  - Signature: sweet:star
+    Count: 18
+  - Signature: sweet:donut
+    Count: 15
+  - Signature: cupcake
+    Count: 6
+  - Signature: croissant
+    Count: 2
+  UseInitialLayout: 1
+  InitialCells:
+  - X: 1
+    Y: 8
+    ItemKey: croissant
+  - X: 3
+    Y: 8
+    ItemKey: croissant
+  - X: 5
+    Y: 8
+    ItemKey: croissant
+  - X: 7
+    Y: 8
+    ItemKey: croissant
+  - X: 0
+    Y: 5
+    ItemKey: cupcake
+  - X: 3
+    Y: 5
+    ItemKey: cupcake
+  - X: 7
+    Y: 5
+    ItemKey: cupcake
+  - X: 1
+    Y: 3
+    ItemKey: cupcake
+  - X: 4
+    Y: 3
+    ItemKey: cupcake
+  - X: 6
+    Y: 3
+    ItemKey: cupcake
+  - X: 2
+    Y: 1
+    ItemKey: cupcake
+  - X: 5
+    Y: 1
+    ItemKey: cupcake
